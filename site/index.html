@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Last Known Position · Abandoned but not Forgotten</title>
+  <meta name="description" content="An interactive story atlas of the hardware humanity left on the Moon, on Mars and in deep space: where it is, what it discovered, and which machines are still talking to Earth.">
+  <meta name="theme-color" content="#070a12">
+  <meta property="og:title" content="Last Known Position">
+  <meta property="og:description" content="Find the machines we left on the Moon, on Mars and between the stars, and hear their stories.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23f5c45a' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23f5c45a'/%3E%3C/svg%3E">
+  <script>
+    /* Runs before paint: mark JS available and restore the saved theme. */
+    document.documentElement.classList.add("js");
+    try { var t = localStorage.getItem("lkp-theme"); if (t === "day" || t === "night") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="vendor/leaflet-1.9.4/leaflet.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to the story</a>
+
+  <!-- Icon sprite: one 24px line-icon family, 1.75 stroke -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-lander" viewBox="0 0 24 24"><path d="M8 5h8l2 6H6l2-6Z"/><path d="M7 11l-3 8M17 11l3 8M10 11l-1 8M14 11l1 8M2.5 19h3M18.5 19h3M12 5V3"/></symbol>
+      <symbol id="i-rover" viewBox="0 0 24 24"><rect x="3.5" y="9" width="15" height="5" rx="1.2"/><circle cx="6" cy="17.5" r="2"/><circle cx="12" cy="17.5" r="2"/><circle cx="18" cy="17.5" r="2"/><path d="M15 9V5.5h4M19 5.5l1.5-1.5"/></symbol>
+      <symbol id="i-helicopter" viewBox="0 0 24 24"><path d="M3 4.5h18M12 4.5v3.5"/><path d="M5 8h14" opacity=".55"/><rect x="8" y="9.5" width="8" height="5.5" rx="1.6"/><path d="M9 15l-2.5 4.5M15 15l2.5 4.5M5 19.5h4M15 19.5h4"/></symbol>
+      <symbol id="i-probe" viewBox="0 0 24 24"><path d="M5 5.5a9 9 0 0 1 0 13"/><path d="M5 5.5 11 12l-6 6.5"/><path d="M11 12h10M17 9v6M21 10.5v3"/></symbol>
+      <symbol id="i-reflector" viewBox="0 0 24 24"><rect x="5" y="6" width="14" height="11" rx="1"/><path d="M5 9.7h14M5 13.3h14M9.7 6v11M14.3 6v11M8 21l4-4 4 4"/></symbol>
+      <symbol id="i-seismometer" viewBox="0 0 24 24"><path d="M2 12h3.5l2-5 3 10 3-13 2.5 8 1.5-3H22"/></symbol>
+      <symbol id="i-impact" viewBox="0 0 24 24"><ellipse cx="12" cy="17" rx="8.5" ry="3"/><path d="M12 3v6M6 5.5l3 4.5M18 5.5l-3 4.5"/></symbol>
+      <symbol id="i-orbiter" viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M2 9.5h5v5H2zM17 9.5h5v5h-5zM7 12h2M15 12h2M12 9V6"/></symbol>
+      <symbol id="i-signal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.8"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></symbol>
+      <symbol id="i-silent" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.8"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/><path d="M4 4l16 16"/></symbol>
+      <symbol id="i-lost" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5 1c0 1.9-2.5 2.2-2.5 4"/><path d="M12 17.3h.01"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+      <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 9v6M9 6v12M13 9v6M17 4v16M21 10v4"/></symbol>
+      <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/></symbol>
+      <symbol id="i-map" viewBox="0 0 24 24"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5L19.5 7"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+      <symbol id="i-send" viewBox="0 0 24 24"><path d="M3.5 11.5 20.5 4l-6.5 16.5-3-7-7.5-2Z"/><path d="M11 13.5 20.5 4"/></symbol>
+      <symbol id="i-logo" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12.5"/><circle cx="16" cy="16" r="6.5" opacity=".55"/><circle cx="16" cy="16" r="2.4" fill="currentColor" stroke="none"/><path d="M16 1.5v4M16 26.5v4M1.5 16h4M26.5 16h4"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="site-header" id="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="#top" aria-label="Last Known Position, back to top">
+        <svg class="brand__mark" aria-hidden="true"><use href="#i-logo"/></svg>
+        <span class="brand__name">Last Known Position</span>
+      </a>
+      <nav class="nav" aria-label="Chapters">
+        <ul class="nav__list" id="nav-list">
+          <li><a class="nav__link" href="#moon">Moon</a></li>
+          <li><a class="nav__link" href="#mars">Mars</a></li>
+          <li><a class="nav__link" href="#deep">Deep space</a></li>
+          <li><a class="nav__link" href="#listening">Silence board</a></li>
+          <li><a class="nav__link" href="#timeline">Timeline</a></li>
+          <li><a class="nav__link" href="#quiz">Quiz</a></li>
+        </ul>
+      </nav>
+      <div class="site-header__tools">
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to day mode (good for projectors)">
+          <svg class="icon icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="icon icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+        <button class="icon-btn nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-list" aria-label="Open chapter menu">
+          <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
+  </header>
+
+  <main id="main">
+    <!-- ============================== HERO ============================== -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <canvas class="hero__stars" aria-hidden="true"></canvas>
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="kicker hero__kicker"><span class="live-dot" aria-hidden="true"></span>NASA Space Apps 2026 · Abandoned but not forgotten</p>
+          <h1 class="hero__title" id="hero-title">Last Known <em>Position</em></h1>
+          <p class="hero__lead">Rovers, landers and spacecraft are still out there: parked on the Moon, asleep on Mars, drifting between the stars. Find out where they are, what they discovered, and which ones are still talking to Earth.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#prologue">Begin the story <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+            <a class="btn" href="#moon"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg> Open the atlas</a>
+          </div>
+          <p class="ticker" aria-hidden="true"><span class="ticker__label">Last signal</span><span class="ticker__text" id="ticker-text">OPPORTUNITY · MERIDIANI PLANUM · 10 JUN 2018</span></p>
+        </div>
+
+        <figure class="radar" aria-labelledby="radar-caption">
+          <svg class="radar__svg" viewBox="0 0 560 560" aria-hidden="true" focusable="false">
+            <defs>
+              <radialGradient id="g-earth" cx="40%" cy="35%" r="70%">
+                <stop offset="0" stop-color="#9fd7ff"/><stop offset=".55" stop-color="#2f7fd6"/><stop offset="1" stop-color="#123a73"/>
+              </radialGradient>
+              <linearGradient id="g-sweep" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="var(--accent)" stop-opacity="0"/>
+                <stop offset="1" stop-color="var(--accent)" stop-opacity=".28"/>
+              </linearGradient>
+            </defs>
+            <g class="radar__rings">
+              <circle cx="280" cy="280" r="70"/>
+              <circle cx="280" cy="280" r="140"/>
+              <circle cx="280" cy="280" r="205"/>
+              <circle cx="280" cy="280" r="262" class="radar__ring--outer"/>
+              <path d="M280 10v540M10 280h540" class="radar__cross"/>
+            </g>
+            <g class="radar__sweep"><path d="M280 280 L542 280 A262 262 0 0 0 465.3 94.7 Z" fill="url(#g-sweep)"/></g>
+            <circle cx="280" cy="280" r="11" fill="url(#g-earth)"/>
+          </svg>
+          <span class="radar__earth">Earth</span>
+          <a class="blip blip--moon" href="#moon" style="--x:39.2%;--y:43.8%"><span class="blip__dot" aria-hidden="true"></span><span class="blip__label">Moon<small>1.3 light-seconds</small></span></a>
+          <a class="blip blip--mars" href="#mars" style="--x:69.1%;--y:66.1%"><span class="blip__dot" aria-hidden="true"></span><span class="blip__label">Mars<small>3–22 light-minutes</small></span></a>
+          <a class="blip blip--deep blip--left" href="#deep" style="--x:80%;--y:29%"><span class="blip__dot" aria-hidden="true"></span><span class="blip__label">New Horizons<small>~9 light-hours</small></span></a>
+          <a class="blip blip--deep" href="#deep" style="--x:26.6%;--y:9.5%"><span class="blip__dot" aria-hidden="true"></span><span class="blip__label">Voyager 1<small>~1 light-day</small></span></a>
+          <figcaption class="radar__caption" id="radar-caption">How long a radio signal from Earth takes to arrive. Rings not to scale: each one is vastly farther than the last.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================== PROLOGUE ============================== -->
+    <section class="section prologue" id="prologue" aria-labelledby="prologue-title">
+      <div class="container">
+        <p class="kicker" data-reveal><span class="kicker__num">00</span> Prologue</p>
+        <h2 class="section__title" id="prologue-title" data-reveal>Nothing gets tidied up out there</h2>
+        <div class="prologue__grid">
+          <div class="prose prose--lead" data-reveal id="prologue-text">
+            <p>On Earth, the things we leave behind get buried, rust away or wash off in the rain. On the Moon there is no wind and no rain. Boot prints and rover tracks from the 1970s are still there, and NASA’s Lunar Reconnaissance Orbiter has photographed them from orbit.</p>
+            <p>Since the 1960s, space agencies have sent machines to the Moon, to Mars and far beyond. When a mission ends, the machine stays where it is. Some are silent. A few are lost. And a few are still working.</p>
+            <p><strong>Each one has a last known position.</strong> Let’s go and visit them.</p>
+          </div>
+          <div class="prologue__side" data-reveal>
+            <button class="listen-btn" type="button" data-listen="#prologue-text" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Listen</span>
+            </button>
+            <p class="howto"><span class="howto__key">How to explore</span> Tap any machine to open its dossier. Every fact links to its source, and the machines’ own words are <em>imagined logs</em> built from real mission facts.</p>
+          </div>
+        </div>
+
+        <ul class="stats" role="list">
+          <li class="stat corners" data-reveal>
+            <span class="stat__value">100</span>
+            <span class="stat__label">mirrors in the panel Apollo 11 left in 1969. Scientists still bounce lasers off it.</span>
+            <a class="stat__src" href="https://www.jpl.nasa.gov/news/the-apollo-experiment-that-keeps-on-giving/" target="_blank" rel="noopener">Source: NASA JPL</a>
+          </li>
+          <li class="stat corners" data-reveal>
+            <span class="stat__value">72</span>
+            <span class="stat__label">flights by the Ingenuity helicopter on Mars. It was planned for five.</span>
+            <a class="stat__src" href="https://www.jpl.nasa.gov/news/nasas-ingenuity-mars-helicopter-team-says-goodbye-for-now" target="_blank" rel="noopener">Source: NASA JPL</a>
+          </li>
+          <li class="stat corners" data-reveal>
+            <span class="stat__value">1,300+</span>
+            <span class="stat__label">marsquakes heard by the InSight lander before dust silenced it.</span>
+            <a class="stat__src" href="https://science.nasa.gov/mission/insight/" target="_blank" rel="noopener">Source: NASA</a>
+          </li>
+          <li class="stat corners" data-reveal>
+            <span class="stat__value">≈24 h</span>
+            <span class="stat__label">for a radio message to reach Voyager 1, which is still working.</span>
+            <a class="stat__src" href="https://earthsky.org/space/voyager-1-1-light-day-from-earth-november-17-18-2026/" target="_blank" rel="noopener">Source: NASA via EarthSky</a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================== MOON ============================== -->
+    <section class="section chapter" id="moon" data-world="moon" aria-labelledby="moon-title">
+      <div class="container">
+        <div class="chapter__head">
+          <p class="kicker" data-reveal><span class="kicker__num">01</span> The Moon · 384,400 km away</p>
+          <h2 class="section__title" id="moon-title" data-reveal>A museum with no visitors</h2>
+          <div class="prose prose--lead" id="moon-text" data-reveal>
+            <p>Six times between 1969 and 1972, astronauts landed on the Moon. Each time they flew home in the top half of their lunar module and left the bottom half behind, along with cameras, tools, science stations and, on the last three trips, a car.</p>
+            <p>Robots got there first, and robots kept going. Here is what is still on the Moon.</p>
+          </div>
+          <button class="listen-btn" type="button" data-listen="#moon-text" hidden><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Listen</span></button>
+        </div>
+
+        <div class="chapter__grid">
+          <div class="atlas" data-atlas="moon">
+            <div class="atlas__map" id="map-moon" role="region" aria-label="Map of the Moon with markers for left-behind hardware. The list next to it has the same items."></div>
+            <div class="atlas__bar">
+              <ul class="legend" role="list" aria-label="Map legend">
+                <li class="legend__item"><span class="legend__dot legend__dot--working" aria-hidden="true"></span>Still working</li>
+                <li class="legend__item"><span class="legend__dot legend__dot--silent" aria-hidden="true"></span>Silent</li>
+                <li class="legend__item"><span class="legend__dot legend__dot--impact" aria-hidden="true"></span>Impact</li>
+              </ul>
+              <span class="atlas__readout mono" aria-hidden="true">LAT — · LON —</span>
+            </div>
+            <p class="atlas__credit">Base map: LRO Wide Angle Camera mosaic (NASA/GSFC/ASU) via NASA Moon Trek. Positions: LROC.</p>
+          </div>
+          <ul class="ghost-list" role="list" data-ghost-list="moon" aria-label="Hardware on the Moon"></ul>
+        </div>
+
+        <ul class="moments" role="list">
+          <li class="moment" data-reveal>
+            <p class="kicker">Ocean of Storms · 1969</p>
+            <p class="moment__quote">The only robot humans have ever walked up to on another world.</p>
+            <button class="text-btn" type="button" data-open="surveyor3">Meet Surveyor 3 <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+          <li class="moment" data-reveal>
+            <p class="kicker">Taurus–Littrow · 1972</p>
+            <p class="moment__quote">The last car on the Moon filmed its drivers leaving.</p>
+            <button class="text-btn" type="button" data-open="lrv17">Meet Rover 3 <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+          <li class="moment" data-reveal>
+            <p class="kicker">Sea of Rains · 2010</p>
+            <p class="moment__quote">Lost for 40 years, a rover answered a laser’s knock.</p>
+            <button class="text-btn" type="button" data-open="lunokhod1">Meet Lunokhod 1 <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================== MARS ============================== -->
+    <section class="section chapter" id="mars" data-world="mars" aria-labelledby="mars-title">
+      <div class="container">
+        <div class="chapter__head">
+          <p class="kicker" data-reveal><span class="kicker__num">02</span> Mars · <span data-mars-distance>55–401 million km away</span></p>
+          <h2 class="section__title" id="mars-title" data-reveal>The ghost rovers</h2>
+          <div class="prose prose--lead" id="mars-text" data-reveal>
+            <p>Mars is harder. It has dust storms, freezing nights and air too thin to breathe, and it is so far away that radio signals take minutes to arrive. Even so, NASA has landed nine missions there.</p>
+            <p>Most of the machines here were built to last a few months. Many lasted years. Their stories tend to end the same way: with a signal that never came back.</p>
+          </div>
+          <button class="listen-btn" type="button" data-listen="#mars-text" hidden><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Listen</span></button>
+        </div>
+
+        <div class="chapter__grid">
+          <div class="atlas" data-atlas="mars">
+            <div class="atlas__map" id="map-mars" role="region" aria-label="Map of Mars with markers for landers and rovers. The list next to it has the same items."></div>
+            <div class="atlas__bar">
+              <ul class="legend" role="list" aria-label="Map legend">
+                <li class="legend__item"><span class="legend__dot legend__dot--working" aria-hidden="true"></span>Still working</li>
+                <li class="legend__item"><span class="legend__dot legend__dot--silent" aria-hidden="true"></span>Silent</li>
+                <li class="legend__item"><span class="legend__dot legend__dot--lost" aria-hidden="true"></span>Lost</li>
+              </ul>
+              <span class="atlas__readout mono" aria-hidden="true">LAT — · LON —</span>
+            </div>
+            <p class="atlas__credit">Base map: Viking MDIM 2.1 color mosaic (NASA/JPL/USGS) via NASA Mars Trek. Positions approximate.</p>
+          </div>
+          <ul class="ghost-list" role="list" data-ghost-list="mars" aria-label="Hardware on Mars"></ul>
+        </div>
+
+        <ul class="moments" role="list">
+          <li class="moment" data-reveal>
+            <p class="kicker">Endeavour crater · 2014</p>
+            <p class="moment__quote">A crater on Mars is named after a Soviet Moon rover.</p>
+            <button class="text-btn" type="button" data-open="lunokhod2">Find out why <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+          <li class="moment" data-reveal>
+            <p class="kicker">Jezero crater · 2021</p>
+            <p class="moment__quote">A scrap of the Wright brothers’ 1903 airplane flew on Mars.</p>
+            <button class="text-btn" type="button" data-open="ingenuity">Meet Ingenuity <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+          <li class="moment" data-reveal>
+            <p class="kicker">Mars orbit · 1999</p>
+            <p class="moment__quote">A spacecraft lost to a mix-up between pounds and newtons.</p>
+            <button class="text-btn" type="button" data-open="climateorbiter">Read the mistake <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================== DEEP SPACE ============================== -->
+    <section class="section chapter" id="deep" data-world="deep" aria-labelledby="deep-title">
+      <div class="container">
+        <div class="chapter__head">
+          <p class="kicker" data-reveal><span class="kicker__num">03</span> Deep space · billions of km away</p>
+          <h2 class="section__title" id="deep-title" data-reveal>Messages in a bottle</h2>
+          <div class="prose prose--lead" id="deep-text" data-reveal>
+            <p>Some machines never land anywhere. Pioneer 10 and 11, Voyager 1 and 2, and New Horizons were flung so fast that the Sun’s gravity will never pull them back. They are leaving for good.</p>
+            <p>Because they could drift for millions of years, some carry messages: a gold plaque on each Pioneer, and on each Voyager a golden record of sounds and pictures from Earth.</p>
+          </div>
+          <button class="listen-btn" type="button" data-listen="#deep-text" hidden><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Listen</span></button>
+        </div>
+
+        <div class="deep__grid">
+          <ul class="ghost-list" role="list" data-ghost-list="deep" aria-label="Spacecraft in deep space"></ul>
+
+          <div class="lightclock" id="lightclock" aria-labelledby="lc-title">
+            <div class="lightclock__head">
+              <p class="kicker">Interactive</p>
+              <h3 class="lightclock__title" id="lc-title">The Light Clock</h3>
+              <p class="lightclock__intro">Radio travels at the speed of light, about 300,000 km every second. Send a message and see how long it takes to arrive.</p>
+            </div>
+            <div class="lightclock__body">
+              <div class="gauge" aria-hidden="true">
+                <div class="gauge__track"><span class="gauge__pulse"></span></div>
+                <ol class="gauge__ticks"></ol>
+                <ol class="gauge__marks"></ol>
+              </div>
+              <form class="lc-form" id="lc-form" novalidate>
+                <label class="field">
+                  <span class="field__label">Your message</span>
+                  <input class="field__input" id="lc-message" name="message" type="text" maxlength="60" autocomplete="off" value="Hello from Earth!" required>
+                  <span class="field__hint">Up to 60 characters.</span>
+                </label>
+                <fieldset class="lc-dest">
+                  <legend class="field__label">Send it to</legend>
+                  <div class="lc-dest__options" id="lc-options"></div>
+                </fieldset>
+                <button class="btn btn--primary lc-send" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg> Send at light speed</button>
+              </form>
+              <div class="lc-result" id="lc-result" role="status" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+
+        <ul class="moments" role="list">
+          <li class="moment" data-reveal>
+            <p class="kicker">Voyager 1 &amp; 2 · 1977</p>
+            <p class="moment__quote">Golden records with sounds, music and greetings for anyone who finds them.</p>
+            <button class="text-btn" type="button" data-open="voyager1">Meet Voyager 1 <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+          <li class="moment" data-reveal>
+            <p class="kicker">Pluto · 2015</p>
+            <p class="moment__quote">The man who discovered Pluto finally flew past it.</p>
+            <button class="text-btn" type="button" data-open="newhorizons">Meet New Horizons <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+          <li class="moment" data-reveal>
+            <p class="kicker">Aquila · in four million years</p>
+            <p class="moment__quote">Pioneer 11 will drift past another star, still carrying our picture.</p>
+            <button class="text-btn" type="button" data-open="pioneer11">Meet Pioneer 11 <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================== SILENCE BOARD ============================== -->
+    <section class="section board-section" id="listening" aria-labelledby="board-title">
+      <div class="container">
+        <p class="kicker" data-reveal><span class="kicker__num">04</span> Still listening</p>
+        <h2 class="section__title" id="board-title" data-reveal>The silence board</h2>
+        <div class="prose prose--lead" data-reveal>
+          <p>Some missions end with a goodbye. Most just go quiet. Teams keep listening for weeks or months, sometimes sending hundreds of wake-up calls, before they decide a spacecraft is gone. These counters run live.</p>
+        </div>
+        <div class="board" id="board">
+          <div class="board__filters" role="group" aria-label="Filter the silence board">
+            <button class="filter is-active" type="button" data-filter="all" aria-pressed="true">All</button>
+            <button class="filter" type="button" data-filter="moon" aria-pressed="false">Moon</button>
+            <button class="filter" type="button" data-filter="mars" aria-pressed="false">Mars</button>
+            <button class="filter" type="button" data-filter="deep" aria-pressed="false">Deep space</button>
+            <button class="filter" type="button" data-filter="working" aria-pressed="false">Still working</button>
+          </div>
+          <ol class="board__list" id="board-list" role="list"></ol>
+          <p class="board__note">Counters start at 00:00 UTC on the date shown. Where only the month or year is known, they start at the beginning of it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== TIMELINE ============================== -->
+    <section class="section timeline-section" id="timeline" aria-labelledby="timeline-title">
+      <div class="container">
+        <div class="timeline__head">
+          <div>
+            <p class="kicker" data-reveal><span class="kicker__num">05</span> 1967 → 2026</p>
+            <h2 class="section__title" id="timeline-title" data-reveal>Sixty years of leaving things behind</h2>
+          </div>
+          <div class="timeline__controls">
+            <button class="icon-btn icon-btn--lg" type="button" data-tl="prev" aria-label="Scroll timeline back"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg></button>
+            <button class="icon-btn icon-btn--lg" type="button" data-tl="next" aria-label="Scroll timeline forward"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <ol class="timeline" id="timeline-track" tabindex="0" aria-label="Timeline of events. Scroll sideways or use the arrow keys."></ol>
+    </section>
+
+    <!-- ============================== QUIZ ============================== -->
+    <section class="section quiz-section" id="quiz" aria-labelledby="quiz-title">
+      <div class="container quiz-wrap">
+        <div class="quiz__intro">
+          <p class="kicker" data-reveal><span class="kicker__num">06</span> Test yourself</p>
+          <h2 class="section__title" id="quiz-title" data-reveal>Are you a ghost hunter?</h2>
+          <p class="prose" data-reveal>Eight questions. Every answer comes with the real story behind it.</p>
+        </div>
+        <div class="quiz" id="quiz-card" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- ============================== EPILOGUE ============================== -->
+    <section class="section epilogue" id="epilogue" aria-labelledby="epilogue-title">
+      <div class="container">
+        <p class="kicker" data-reveal><span class="kicker__num">07</span> Epilogue</p>
+        <h2 class="section__title" id="epilogue-title" data-reveal>What will we leave next?</h2>
+        <div class="epilogue__grid">
+          <div class="prose prose--lead" id="epilogue-text" data-reveal>
+            <p>NASA’s Artemis program plans to send astronauts back to the Moon. Curiosity and Perseverance are exploring Mars right now. One day they will fall silent too.</p>
+            <p>The machines in this story showed us that the Moon is slowly drifting away, that Mars once had water, and what lies at the edge of the Sun’s bubble. They are abandoned, but not forgotten.</p>
+            <button class="listen-btn" type="button" data-listen="#epilogue-text" hidden><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Listen</span></button>
+          </div>
+          <aside class="teachers" data-reveal aria-labelledby="teachers-title">
+            <h3 class="teachers__title" id="teachers-title">For teachers: three classroom activities</h3>
+            <ol class="teachers__list">
+              <li><strong>Ghost hunt · 15 min.</strong> Use the Moon map to find all three Apollo rovers and Lunokhod 2. Which one drove farthest? Who broke its record, and where?</li>
+              <li><strong>Silence math · 10 min.</strong> Use the silence board to find how many days Opportunity has been silent. A sol is 1.0275 Earth days. How many sols is that?</li>
+              <li><strong>Write a mission log · 20 min.</strong> Pick a machine and write its last day in the first person, using at least three real facts from its dossier.</li>
+            </ol>
+          </aside>
+        </div>
+
+        <div class="method" data-reveal>
+          <h3 class="method__title">Sources &amp; method</h3>
+          <p>Every fact in a dossier links to its source, NASA or JPL wherever possible. Moon positions come from LROC’s <a href="https://www.lroc.asu.edu/data/support/downloads/2016_LROC_Coordinates_of_Human_Features.pdf" target="_blank" rel="noopener">Coordinates of Lunar Anthropogenic Features</a>. Mars positions are published landing coordinates. The live Mars distance uses JPL’s <a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html" target="_blank" rel="noopener">approximate planetary positions</a>. Map imagery: <a href="https://trek.nasa.gov/" target="_blank" rel="noopener">NASA Trek</a>. The machines’ first-person logs are imagined, written from real mission facts, and always labeled. Facts checked on <time datetime="2026-11-09">9 November 2026</time>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <p class="site-footer__brand"><svg class="brand__mark" aria-hidden="true"><use href="#i-logo"/></svg> Last Known Position</p>
+      <p class="site-footer__text">Built for the 2026 NASA International Space Apps Challenge: <em>Abandoned but not Forgotten</em>. This is a student project, not an official NASA website. Imagery courtesy of NASA, JPL-Caltech, GSFC, ASU and USGS.</p>
+      <a class="text-btn" href="#top">Back to top</a>
+    </div>
+  </footer>
+
+  <!-- ============================== DOSSIER ============================== -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="dossier" id="dossier" role="dialog" aria-modal="true" aria-labelledby="dossier-title" hidden>
+    <div class="dossier__head">
+      <span class="dossier__icon" id="dossier-icon" aria-hidden="true"></span>
+      <div class="dossier__heading">
+        <p class="dossier__mission" id="dossier-mission"></p>
+        <h2 class="dossier__title" id="dossier-title" tabindex="-1"></h2>
+        <div class="dossier__status" id="dossier-status"></div>
+      </div>
+      <button class="icon-btn dossier__close" id="dossier-close" type="button" aria-label="Close dossier"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="dossier__body" id="dossier-body"></div>
+    <div class="dossier__foot">
+      <button class="icon-btn" id="dossier-prev" type="button" aria-label="Previous machine"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg></button>
+      <div class="dossier__actions">
+        <button class="btn btn--small" id="dossier-listen" type="button" hidden><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Listen</span></button>
+        <button class="btn btn--small" id="dossier-map" type="button"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg><span class="lbl-long">Show on map</span><span class="lbl-short">Map</span></button>
+      </div>
+      <button class="icon-btn" id="dossier-next" type="button" aria-label="Next machine"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+    </div>
+  </aside>
+
+  <noscript><p class="noscript">This story works best with JavaScript turned on: the maps, dossiers and live counters need it.</p></noscript>
+
+  <script src="vendor/leaflet-1.9.4/leaflet.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/core.js" defer></script>
+  <script src="js/atlas.js" defer></script>
+  <script src="js/features.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
