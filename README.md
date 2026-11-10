@@ -1,66 +1,81 @@
 # Last Known Position
 
-**An interactive story atlas of the machines humanity left behind on the Moon, on Mars and in deep space.**
+**Fly through a live 3D solar system and meet the machines humanity left behind on the Moon, on Mars and in deep space.**
 Built for the 2026 NASA International Space Apps Challenge: *Abandoned but not Forgotten: Storytelling about NASA's Discarded Equipment on the Moon and Mars*.
 
-Readers find 29 real artifacts on NASA Trek maps of the Moon and Mars. Each one has a dossier with its story, an imagined first-person log, the science it made possible, and its sources. Live counters show how long each has been silent, and a Light Clock shows how long a message takes to reach the Moon, Mars (computed live), New Horizons or Voyager 1.
+## What it does
+
+- **Solar system simulator.** Every planet, the Moon and five departing spacecraft are shown where they really are on the chosen date. Fly to the Moon or Mars and the real surface appears, with a glowing pin at the measured position of each machine. Hover a pin for its photo, click to open its story.
+- **Clear distances.** Each world shows its distance from the Sun and from Earth and how long light takes to get there. Switch between "Easy view" and "True distances" to see how empty space really is.
+- **29 dossiers with real photos.** Each has the story, an imagined first-person log, the science it made possible, a NASA photo and its sources.
+- **Search.** Press `/` and type "rover", "Apollo", "Mars" or "still working".
+- **Also:** zoomable NASA maps of the Moon and Mars, live "silence" counters, a Light Clock, a timeline, a quiz, read-aloud narration, and a Day mode for classroom projectors.
 
 The winning strategy, judging-criteria map, demo script and submission checklist are in [docs/CONCEPT.md](docs/CONCEPT.md).
 
 ## Run it
 
-No build step and no dependencies to install. Any static server works:
+No build step and nothing to install. Any static web server works:
 
 ```bash
 python3 -m http.server 8080 --directory site
 ```
 
-Then open <http://localhost:8080>. Opening `site/index.html` directly also works.
+Then open <http://localhost:8080>.
 
-Map tiles and fonts load from NASA Trek and Google Fonts, so the maps need an internet connection. Without one, the site still works: the lists, dossiers, counters, Light Clock and quiz all run locally.
+The 3D simulator needs the site to be served like this (or hosted online). If you open `site/index.html` directly as a file, the browser blocks the simulator and the page says so; everything else still works.
+
+Fonts, photos, planet maps and code libraries are all bundled, so the simulator works offline. Only the two zoomable 2D maps load imagery from NASA Trek and need an internet connection.
 
 ## Deploy
 
 - **Netlify Drop:** drag the `site/` folder onto <https://app.netlify.com/drop>.
 - **GitHub Pages:** publish the `site/` folder with a Pages workflow, or move its contents to `/docs` and choose "Deploy from branch → /docs".
 
+After you change any CSS or JS file, bump the `?v=` number on the `<link>` and `<script>` tags in `site/index.html` so browsers fetch the new version.
+
 ## Project structure
 
 ```
 site/
   index.html            page structure and static story text
-  css/styles.css        design tokens (night and day themes), components, responsive rules
-  js/data.js            ALL content: artifacts, sources, timeline, quiz, Light Clock targets
-  js/core.js            helpers: icons, dates, counters, read-aloud, event bus
-  js/atlas.js           Leaflet maps of the Moon and Mars (NASA Trek tiles, EPSG:4326)
-  js/features.js        Light Clock + live Earth–Mars distance, silence board, timeline, quiz
-  js/app.js             theme, navigation, starfield, dossier dialog, deep links
-  vendor/leaflet-1.9.4  Leaflet (BSD-2), bundled so the maps don't depend on a CDN
+  css/styles.css        design tokens (night and day), glass and clay components, responsive rules
+  js/data.js            ALL content: machines, sources, worlds, spacecraft positions, timeline, quiz
+  js/images.js          photo, caption and credit for every machine
+  js/core.js            helpers: icons, dates, read-aloud, orbit math (LKP.orbit)
+  js/sim.js             the 3D simulator (Three.js, ES module)
+  js/atlas.js           zoomable 2D maps of the Moon and Mars (Leaflet + NASA Trek tiles)
+  js/features.js        Light Clock, silence board, timeline, quiz
+  js/app.js             theme, navigation, search, dossier dialog, deep links
+  assets/               photos, planet maps and fonts (see assets/CREDITS.md)
+  vendor/               three.js r170 (MIT) and Leaflet 1.9.4 (BSD-2)
 docs/CONCEPT.md         idea, story design, judging map, demo script, checklist
 ```
 
-## Adding or editing an artifact
+## Adding or editing a machine
 
-Everything lives in `site/js/data.js`. Copy an existing entry and fill in:
-
-- `world` (`moon`, `mars` or `deep`), `kind` (lander, rover, helicopter, probe, reflector, seismometer, impact or orbiter), and `status` (working, silent, lost or impact)
-- `loc` with `lat`/`lon` in degrees east (−180…180) and a `site` id. Artifacts that share a `site` share one map marker.
-- `since` (YYYY, YYYY-MM or YYYY-MM-DD) and `sinceLabel`, which drive the silence board
-- `story`, `voice` (always imagined, always fact-based), `learned`, `facts`, `sources` (at least one)
+1. Add an entry to `LKP.ghosts` in `site/js/data.js`. Copy an existing one and fill in:
+   - `world` (`moon`, `mars` or `deep`), `kind`, and `status` (working, silent, lost or impact)
+   - `loc` with `lat`/`lon` in degrees east (−180…180) and a `site` id. Machines that share a `site` share one pin on the globe and the map.
+   - `since` (YYYY, YYYY-MM or YYYY-MM-DD) and `sinceLabel`, which drive the silence board
+   - `story`, `voice` (always imagined, always fact-based), `learned`, `facts`, `sources` (at least one)
+2. Add its photo to `site/assets/ghosts/` as `<id>.jpg` (about 1000 px) and `<id>_t.jpg` (400×300), and an entry in `site/js/images.js` with a caption, credit and source link. Without a photo, the machine falls back to an icon.
 
 Deep links open any dossier directly, for example `index.html#ghost=opportunity`.
 
 ## Accuracy
 
-- Facts were checked on 9 November 2026 against the sources linked in each dossier (NASA and JPL wherever possible). Every source link was verified to resolve.
-- Moon positions come from LROC's *Coordinates of Lunar Anthropogenic Features* (2016). Mars positions are published landing coordinates, approximate where marked.
-- The live Earth–Mars distance uses JPL's Keplerian elements (valid 1800–2050). It reproduces real close approaches: 55.8 million km on 27 Aug 2003, 57.6 million km on 31 Jul 2018 and 96.1 million km on 12 Jan 2025.
-- Machine "voices" are imagined and labeled as such every time they appear.
+- **Planet positions** use NASA JPL's Keplerian elements (valid 1800–2050). Checked against JPL Horizons for 10 November 2026: every planet and Pluto is within 0.13% of its true distance and 0.07° of its true direction. The Moon's direction is good to about 1.5°.
+- **Spacecraft positions** (Voyager 1 and 2, Pioneer 10 and 11, New Horizons) come from JPL Horizons position and velocity vectors. They now travel in nearly straight lines, so the simulator moves them at constant velocity, and hides each one for dates before its last planetary flyby. Pioneer positions are predictions: nobody has heard from them since 1995 and 2003.
+- **What is not to scale:** the sizes of the worlds, the Moon's distance from Earth, and how fast the planets spin. "Easy view" also squeezes the outer orbits (square-root spacing); "True distances" is linear. The site says this next to the controls.
+- **Moon positions** come from LROC's *Coordinates of Lunar Anthropogenic Features* (2016). Mars positions are published landing coordinates, approximate where marked.
+- **Facts** were checked on 9 November 2026 against the sources linked in each dossier (NASA and JPL wherever possible). All source links were re-verified on 11 November 2026.
+- **Machine "voices"** are imagined and labeled as such every time they appear.
 
 ## Accessibility
 
-WCAG AA color contrast in both themes. The site supports keyboard navigation (skip link, focus rings, focus-trapped dialog, Escape to close, arrow keys in the timeline and dossier) and screen readers (labels on map markers, plus a full list that mirrors each map). It also has read-aloud narration via the Web Speech API, respects reduced-motion settings, and uses Atkinson Hyperlegible for body text. Day mode is designed for classroom projectors.
+WCAG AA text contrast in both themes. Keyboard support throughout: skip link, visible focus rings, focus-trapped dialogs, Escape to close, `/` to search, arrow keys in search results, the timeline and dossiers. In the simulator, every world and spacecraft can be reached from the button strip, and every pin is a real button with a spoken label, so nothing depends on dragging. Each map and globe is mirrored by a full list. Read-aloud narration uses the Web Speech API. Reduced-motion settings turn off camera flights and animations. Body text is Atkinson Hyperlegible. Not yet tested with a physical screen reader.
 
 ## Credits
 
-Map imagery: LRO WAC global mosaic (NASA/GSFC/Arizona State University) and Viking MDIM 2.1 (NASA/JPL/USGS), served by [NASA Trek](https://trek.nasa.gov/). Map library: [Leaflet](https://leafletjs.com/) (BSD-2). Fonts: Fraunces, Atkinson Hyperlegible and IBM Plex Mono (SIL Open Font License). This is a student hackathon project, not an official NASA website.
+Full asset credits and licenses are in [site/assets/CREDITS.md](site/assets/CREDITS.md). In short: photos and the Moon and Mars maps are NASA public-domain imagery; other planet maps are from Solar System Scope (CC BY 4.0); positions come from NASA JPL; code libraries are three.js (MIT) and Leaflet (BSD-2); fonts are under the SIL Open Font License. This is a student hackathon project, not an official NASA website.

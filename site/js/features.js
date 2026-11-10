@@ -7,43 +7,11 @@
 
   const LKP = window.LKP;
   const $ = LKP.$, $$ = LKP.$$, esc = LKP.esc;
-  const C_KM_S = 299792.458;
-  const AU_KM = 149597870.7;
+  const C_KM_S = LKP.C_KM_S;
 
-  /* ------------------------------------------------------------------------
-     Live Earth–Mars distance
-     Keplerian elements from JPL "Approximate Positions of the Planets",
-     Table 1 (valid 1800–2050). Checked against real close approaches:
-     2003-08-27 → 55.8 M km, 2018-07-31 → 57.6 M km, 2025-01-12 → 96.1 M km.
-     ------------------------------------------------------------------------ */
-  const ELEMENTS = {
-    earth: { a: [1.00000261, 0.00000562], e: [0.01671123, -0.00004392], I: [-0.00001531, -0.01294668], L: [100.46457166, 35999.37244981], w: [102.93768193, 0.32327364], O: [0, 0] },
-    mars: { a: [1.52371034, 0.00001847], e: [0.0933941, 0.00007882], I: [1.84969142, -0.00813131], L: [-4.55343205, 19140.30268499], w: [-23.94362959, 0.44441088], O: [49.55953891, -0.29257343] }
-  };
-  const DEG = Math.PI / 180;
-
-  function helio(planet, T) {
-    const k = ELEMENTS[planet];
-    const v = function (x) { return x[0] + x[1] * T; };
-    const a = v(k.a), e = v(k.e), I = v(k.I) * DEG, L = v(k.L), w = v(k.w), O = v(k.O);
-    const M = (((L - w) % 360 + 540) % 360 - 180) * DEG;
-    const om = (w - O) * DEG, Om = O * DEG;
-    let E = M + e * Math.sin(M);
-    for (let i = 0; i < 12; i++) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
-    const xp = a * (Math.cos(E) - e), yp = a * Math.sqrt(1 - e * e) * Math.sin(E);
-    const co = Math.cos(om), so = Math.sin(om), cO = Math.cos(Om), sO = Math.sin(Om), cI = Math.cos(I), sI = Math.sin(I);
-    return [
-      (co * cO - so * sO * cI) * xp + (-so * cO - co * sO * cI) * yp,
-      (co * sO + so * cO * cI) * xp + (-so * sO + co * cO * cI) * yp,
-      (so * sI) * xp + (co * sI) * yp
-    ];
-  }
-
-  function marsKm(date) {
-    const T = (date.getTime() / 86400000 + 2440587.5 - 2451545.0) / 36525;
-    const e = helio("earth", T), m = helio("mars", T);
-    return Math.hypot(m[0] - e[0], m[1] - e[1], m[2] - e[2]) * AU_KM;
-  }
+  /* Live distances from Earth, in km. The orbit math lives in core.js (LKP.orbit). */
+  function marsKm(date) { return LKP.orbit.fromEarthKm(LKP.orbit.helio("mars", date), date); }
+  function probeKm(id, date) { return LKP.orbit.fromEarthKm(LKP.orbit.probe(id, date), date); }
   LKP.marsKm = marsKm;
 
   /* ------------------------------------------------------------------------
@@ -58,7 +26,7 @@
 
     const now = new Date();
     const dests = LKP.destinations.map(function (d) {
-      return Object.assign({}, d, { km: d.live === "mars" ? marsKm(now) : d.km });
+      return Object.assign({}, d, { km: d.live === "mars" ? marsKm(now) : d.live === "probe" ? probeKm(d.id, now) : d.km });
     });
     dests.forEach(function (d) { d.sec = d.km / C_KM_S; });
 
@@ -130,7 +98,7 @@
       };
 
       if (LKP.reduceMotion.matches || !targetMark) { show(); return; }
-      const y = pos(d.live === "mars" ? d.km : d.km) * gauge.clientHeight;
+      const y = pos(d.km) * gauge.clientHeight;
       pulse.classList.remove("is-flying");
       pulse.style.transform = "translateY(0)";
       void pulse.offsetWidth; // restart the transition
@@ -159,7 +127,7 @@
       const where = LKP.WORLDS[g.world] + " · " + g.mission.split(" · ")[0];
       return '<li class="board-row" data-world="' + g.world + '" data-status="' + g.status + '" style="--world:var(--' + g.world + ')">' +
         '<button class="board-row__who" type="button" data-open="' + g.id + '">' +
-        '<span class="board-row__icon">' + LKP.kindIcon(g) + "</span>" +
+        LKP.thumb(g, "board-row__img") +
         '<span><span class="board-row__name">' + esc(g.name) + '</span><span class="board-row__where">' + esc(where) + "</span></span></button>" +
         "<span>" + LKP.chip(g.status) + "</span>" +
         '<p class="board-row__since">' + esc(g.sinceLabel) + " <strong>" + LKP.fmtDate(g.since) + "</strong></p>" +

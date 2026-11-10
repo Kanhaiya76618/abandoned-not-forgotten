@@ -87,7 +87,9 @@
     nhTombaugh: { t: "AP via Deseret News: Astronomer’s ashes nearing icy world he discovered (2015)", u: "https://www.deseret.com/2015/7/12/20483989/astronomer-s-ashes-nearing-icy-world-he-discovered-pluto/" },
     moonFacts: { t: "NASA Science: Moon facts", u: "https://science.nasa.gov/moon/facts/" },
     marsFacts: { t: "NASA Science: Mars facts", u: "https://science.nasa.gov/mars/facts/" },
-    jplElements: { t: "NASA JPL Solar System Dynamics: Approximate positions of the planets", u: "https://ssd.jpl.nasa.gov/planets/approx_pos.html" }
+    jplElements: { t: "NASA JPL Solar System Dynamics: Approximate positions of the planets", u: "https://ssd.jpl.nasa.gov/planets/approx_pos.html" },
+    horizons: { t: "NASA JPL Horizons System (spacecraft trajectories)", u: "https://ssd.jpl.nasa.gov/horizons/" },
+    solarSystem: { t: "NASA Science: Solar System exploration", u: "https://science.nasa.gov/solar-system/" }
   };
   LKP.sources = S;
 
@@ -842,10 +844,53 @@
   LKP.destinations = [
     { id: "moon", name: "The Moon", km: 384400, note: "Average Earth–Moon distance", ghost: "lrrr11", source: S.moonFacts },
     { id: "mars", name: "Mars, today", km: null, live: "mars", note: "Computed live from JPL orbital elements", ghost: "opportunity", source: S.jplElements },
-    { id: "newhorizons", name: "New Horizons", km: 9.5e9, note: "About 9.5 billion km (NASA, June 2026)", ghost: "newhorizons", source: S.nhWake },
-    { id: "voyager1", name: "Voyager 1", km: 25.9e9, note: "About one light-day (NASA, November 2026)", ghost: "voyager1", source: S.voyagerLightDay }
+    { id: "newhorizons", name: "New Horizons", km: null, live: "probe", note: "Computed live from JPL Horizons trajectory data", ghost: "newhorizons", source: S.horizons },
+    { id: "voyager1", name: "Voyager 1", km: null, live: "probe", note: "Computed live from JPL Horizons trajectory data", ghost: "voyager1", source: S.horizons }
   ];
   LKP.marsRange = { nearKm: 54.6e6, farKm: 401e6, source: S.marsFacts };
+
+  /* ---------- Simulator: worlds ------------------------------------------
+     Diameters are NASA equatorial values. "visitedBy" lists machines in this
+     story that flew past; "world" links a body to its chapter of machines. */
+  LKP.bodies = [
+    { id: "sun", name: "The Sun", type: "Star", diameterKm: 1392700, color: "#ffc65a",
+      fact: "Our star holds about 99.8% of all the mass in the solar system. Its light takes about 8 minutes to reach Earth." },
+    { id: "mercury", name: "Mercury", type: "Planet", diameterKm: 4879, color: "#b9b2a8",
+      fact: "The smallest planet and the closest to the Sun. A year here lasts just 88 Earth days." },
+    { id: "venus", name: "Venus", type: "Planet", diameterKm: 12104, color: "#e8c98f",
+      fact: "The hottest planet. Under its thick clouds, the surface is hot enough to melt lead." },
+    { id: "earth", name: "Earth", type: "Planet", diameterKm: 12756, color: "#5aa9ff",
+      fact: "Home. Every machine in this story was built here, and mission control still listens from here." },
+    { id: "moon", name: "The Moon", type: "Moon of Earth", diameterKm: 3475, color: "#d3dbe8", world: "moon",
+      fact: "Earth’s only natural satellite. Twelve people have walked here, and they left a lot behind." },
+    { id: "mars", name: "Mars", type: "Planet", diameterKm: 6792, color: "#f07c4f", world: "mars",
+      fact: "The red planet is cold, dusty and dry today, but it once had rivers and lakes." },
+    { id: "jupiter", name: "Jupiter", type: "Planet", diameterKm: 142984, color: "#e3b98a", visitedBy: ["pioneer10", "pioneer11", "voyager1", "voyager2"],
+      fact: "The biggest planet, more than twice as massive as all the others combined. Pioneer 10 was the first to fly past, in 1973." },
+    { id: "saturn", name: "Saturn", type: "Planet", diameterKm: 120536, color: "#ecd9a0", visitedBy: ["pioneer11", "voyager1", "voyager2"],
+      fact: "Famous for its rings of ice and rock. Pioneer 11 got the first close look in 1979." },
+    { id: "uranus", name: "Uranus", type: "Planet", diameterKm: 51118, color: "#9fe3e6", visitedBy: ["voyager2"],
+      fact: "An ice giant that spins tipped over on its side. Only Voyager 2 has ever visited, in 1986." },
+    { id: "neptune", name: "Neptune", type: "Planet", diameterKm: 49528, color: "#6f8dff", visitedBy: ["voyager2"],
+      fact: "The most distant planet. Only Voyager 2 has ever visited, in 1989." },
+    { id: "pluto", name: "Pluto", type: "Dwarf planet", diameterKm: 2376, color: "#d9bfa3", visitedBy: ["newhorizons"],
+      fact: "A dwarf planet in the Kuiper Belt. New Horizons flew past in 2015 and found a giant heart-shaped plain." }
+  ];
+
+  /* ---------- Simulator: spacecraft leaving the solar system -------------
+     Heliocentric ecliptic position (au) and velocity (au/day) from NASA JPL
+     Horizons at 2026-Nov-10 00:00 TDB. These craft now travel in nearly
+     straight lines, so the simulator moves them at constant velocity.
+     "validFrom" is the date after which that straight line is a fair match
+     (after each craft's last planetary flyby). */
+  LKP.probeEpochJD = 2461354.5;
+  LKP.probes = {
+    voyager1: { p: [-32.21083735, -137.13904573, 99.22236516], v: [-0.00119525254, -0.00786120308, 0.00567820459], validFrom: "1981", tracked: true },
+    voyager2: { p: [39.98737875, -105.680126, -89.96474532], v: [0.00242765675, -0.0053944081, -0.00653564089], validFrom: "1990", tracked: true },
+    pioneer10: { p: [24.09941163, 139.94905257, 7.40635193], v: [0.000708654264, 0.00679721895, 0.000348250148], validFrom: "1974", tracked: false },
+    pioneer11: { p: [29.18027868, -111.00170489, 28.2853796], v: [0.00233175601, -0.0058304261, 0.00140403375], validFrom: "1980", tracked: false },
+    newhorizons: { p: [20.96977635, -62.56433357, 2.30187285], v: [0.00306476617, -0.00721097507, 0.000283778716], validFrom: "2016", tracked: true }
+  };
 
   /* ---------- Hero telemetry ticker -------------------------------------- */
   LKP.ticker = [

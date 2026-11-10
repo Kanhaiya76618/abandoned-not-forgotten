@@ -23,25 +23,7 @@
 
   const state = { maps: {}, byGhost: {}, pending: {} };
 
-  /* Group every location of every ghost on one world into map "sites". */
-  function sitesFor(world) {
-    const sites = new Map();
-    LKP.ghosts.forEach(function (g) {
-      if (g.world !== world || !g.loc) return;
-      g.loc.forEach(function (l) {
-        if (!sites.has(l.site)) sites.set(l.site, { id: l.site, name: l.siteName, lat: l.lat, lon: l.lon, ghosts: [] });
-        const s = sites.get(l.site);
-        if (s.ghosts.indexOf(g) === -1) s.ghosts.push(g);
-      });
-    });
-    return Array.from(sites.values());
-  }
-
-  /* A site shows the "liveliest" status among its ghosts. */
-  function siteStatus(site) {
-    return site.ghosts.map(function (g) { return g.status; })
-      .sort(function (a, b) { return LKP.STATUS[a].order - LKP.STATUS[b].order; })[0];
-  }
+  const sitesFor = LKP.sitesFor, siteStatus = LKP.siteStatus;
 
   function markerIcon(site) {
     const n = site.ghosts.length;
@@ -52,11 +34,20 @@
     });
   }
 
+  /* Hovering a marker shows a photo, so a place is never "just a dot". */
+  function tipHtml(site) {
+    const g = site.ghosts[0], n = site.ghosts.length;
+    return '<span class="map-tip">' + LKP.thumb(g, "map-tip__img") + '<span class="map-tip__text"><strong>' +
+      LKP.esc(n > 1 ? site.name.split(" · ")[0] : g.name) + "</strong><small>" +
+      (n > 1 ? n + " machines here · click to choose" : LKP.STATUS[g.status].label + " · click to open") + "</small></span></span>";
+  }
+
   function popupHtml(site) {
     return '<p class="site-pop__title">' + LKP.esc(site.name) + '</p><ul class="site-pop__list">' +
       site.ghosts.map(function (g) {
-        return '<li><button class="site-pop__btn" type="button" data-open="' + g.id + '">' +
-          '<span class="site-pop__dot" style="--c:' + STATUS_COLOR[g.status] + '"></span>' + LKP.esc(g.name) + "</button></li>";
+        return '<li><button class="site-pop__btn" type="button" data-open="' + g.id + '">' + LKP.thumb(g, "site-pop__img") +
+          "<span><strong>" + LKP.esc(g.name) + '</strong><small><span class="site-pop__dot" style="--c:' + STATUS_COLOR[g.status] + '"></span>' +
+          LKP.STATUS[g.status].label + "</small></span></button></li>";
       }).join("") + "</ul>";
   }
 
@@ -97,7 +88,7 @@
       const single = site.ghosts.length === 1;
       const label = single ? site.ghosts[0].name : site.name + " (" + site.ghosts.length + ")";
       const marker = L.marker([site.lat, site.lon], { icon: markerIcon(site), keyboard: true, riseOnHover: true, title: "" }).addTo(map);
-      marker.bindTooltip(label, { direction: "top", opacity: 1 });
+      marker.bindTooltip(tipHtml(site), { direction: "top", opacity: 1, className: "map-tip-wrap", offset: [0, -4] });
 
       const node = marker.getElement();
       if (node) {
@@ -108,7 +99,7 @@
       if (single) {
         marker.on("click", function () { LKP.openDossier(site.ghosts[0].id, node); });
       } else {
-        marker.bindPopup(popupHtml(site), { maxWidth: 300, minWidth: 220, autoPanPadding: [24, 24] });
+        marker.bindPopup(popupHtml(site), { maxWidth: 320, minWidth: 250, autoPanPadding: [24, 24] });
         marker.on("popupopen", function (e) {
           const first = e.popup.getElement() && e.popup.getElement().querySelector(".site-pop__btn");
           if (first) first.focus({ preventScroll: true });
