@@ -61,6 +61,7 @@
     };
     sizeBand();
     window.addEventListener("resize", sizeBand);
+    LKP.bus.on("view", function (name) { if (name === "deep") sizeBand(); });
 
     /* Destination radio cards */
     $("#lc-options").innerHTML = dests.map(function (d, i) {
@@ -206,6 +207,7 @@
       if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
     });
     window.addEventListener("resize", update);
+    LKP.bus.on("view", function (name) { if (name === "timeline") update(); });
     update();
   }
 

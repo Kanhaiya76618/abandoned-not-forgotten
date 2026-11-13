@@ -17,11 +17,17 @@
   <link rel="preload" href="assets/fonts/fraunces-latin-full-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/atkinson-hyperlegible-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="vendor/leaflet-1.9.4/leaflet.css">
-  <link rel="stylesheet" href="css/styles.css?v=8">
+  <link rel="stylesheet" href="css/styles.css?v=17">
 </head>
 <body>
-  <canvas class="sky" aria-hidden="true"></canvas>
-  <a class="skip-link" href="#main">Skip to the story</a>
+  <div class="bg" aria-hidden="true">
+    <div class="bg__milky"></div>
+    <div class="bg__glow"></div>
+    <canvas class="sky"></canvas>
+    <div class="bg__grain"></div>
+    <div class="bg__vignette"></div>
+  </div>
+  <a class="skip-link" href="#main" data-skip>Skip to the content</a>
 
   <!-- Icon sprite: one 24px line-icon family, 1.75 stroke -->
   <svg xmlns="http://www.w3.org/2000/svg" class="sprite" aria-hidden="true" focusable="false">
@@ -34,6 +40,7 @@
       <symbol id="i-seismometer" viewBox="0 0 24 24"><path d="M2 12h3.5l2-5 3 10 3-13 2.5 8 1.5-3H22"/></symbol>
       <symbol id="i-impact" viewBox="0 0 24 24"><ellipse cx="12" cy="17" rx="8.5" ry="3"/><path d="M12 3v6M6 5.5l3 4.5M18 5.5l-3 4.5"/></symbol>
       <symbol id="i-orbiter" viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M2 9.5h5v5H2zM17 9.5h5v5h-5zM7 12h2M15 12h2M12 9V6"/></symbol>
+      <symbol id="i-telescope" viewBox="0 0 24 24"><path d="M3.5 13.2l11.2-5.2 2 4.3-11.2 5.2z"/><path d="M14.7 8l3.6-1.7 2 4.3-3.6 1.7M10.5 15.5L8 21M10.5 15.5l3.5 5.5"/></symbol>
       <symbol id="i-signal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.8"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></symbol>
       <symbol id="i-silent" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.8"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/><path d="M4 4l16 16"/></symbol>
       <symbol id="i-lost" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5 1c0 1.9-2.5 2.2-2.5 4"/><path d="M12 17.3h.01"/></symbol>
@@ -56,25 +63,28 @@
       <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
       <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
       <symbol id="i-orbit" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(-24 12 12)"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
       <symbol id="i-logo" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12.5"/><circle cx="16" cy="16" r="6.5" opacity=".55"/><circle cx="16" cy="16" r="2.4" fill="currentColor" stroke="none"/><path d="M16 1.5v4M16 26.5v4M1.5 16h4M26.5 16h4"/></symbol>
     </defs>
   </svg>
 
   <header class="site-header" id="site-header">
     <div class="container site-header__inner">
-      <a class="brand" href="#top" aria-label="Last Known Position, back to top">
+      <a class="brand" href="#top" aria-label="Last Known Position, home">
         <svg class="brand__mark" aria-hidden="true"><use href="#i-logo"/></svg>
         <span class="brand__name">Last Known Position</span>
       </a>
-      <nav class="nav" aria-label="Chapters">
-        <ul class="nav__list" id="nav-list">
-          <li><a class="nav__link" href="#simulator">Simulator</a></li>
-          <li><a class="nav__link" href="#moon">Moon</a></li>
-          <li><a class="nav__link" href="#mars">Mars</a></li>
-          <li><a class="nav__link" href="#deep">Deep space</a></li>
-          <li><a class="nav__link" href="#listening">Silence board</a></li>
-          <li><a class="nav__link" href="#timeline">Timeline</a></li>
-          <li><a class="nav__link" href="#quiz">Quiz</a></li>
+      <nav class="tabs" aria-label="Sections">
+        <ul class="tabs__list" id="tabs-list">
+          <li><a class="tab" href="#top" data-tab="home">Simulator</a></li>
+          <li><a class="tab" href="#moon" data-tab="moon"><i class="tab__dot" style="--c:var(--moon)"></i>Moon</a></li>
+          <li><a class="tab" href="#mars" data-tab="mars"><i class="tab__dot" style="--c:var(--mars)"></i>Mars</a></li>
+          <li><a class="tab" href="#deep" data-tab="deep"><i class="tab__dot" style="--c:var(--deep)"></i>Deep space</a></li>
+          <li><a class="tab" href="#listening" data-tab="board">Silence board</a></li>
+          <li><a class="tab" href="#timeline" data-tab="timeline">Timeline</a></li>
+          <li><a class="tab" href="#quiz" data-tab="quiz">Quiz</a></li>
+          <li><a class="tab" href="#epilogue" data-tab="about">About</a></li>
         </ul>
       </nav>
       <div class="site-header__tools">
@@ -85,64 +95,96 @@
           <svg class="icon icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
           <svg class="icon icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
         </button>
-        <button class="icon-btn nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-list" aria-label="Open chapter menu">
-          <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
-        </button>
       </div>
     </div>
     <div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
   </header>
 
   <main id="main">
-    <!-- ============================== HERO ============================== -->
-    <section class="hero" id="top" aria-labelledby="hero-title">
-      <div class="container hero__grid">
-        <div class="hero__copy">
-          <p class="kicker hero__kicker"><span class="live-dot" aria-hidden="true"></span>NASA Space Apps 2026 · Abandoned but not forgotten</p>
-          <h1 class="hero__title" id="hero-title">Last Known <em>Position</em></h1>
-          <p class="hero__lead">Rovers, landers and spacecraft are still out there: parked on the Moon, asleep on Mars, drifting between the stars. Find out where they are, what they discovered, and which ones are still talking to Earth.</p>
-          <div class="hero__actions">
-            <a class="btn btn--primary" href="#prologue">Begin the story <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
-            <a class="btn" href="#simulator"><svg class="icon" aria-hidden="true"><use href="#i-orbit"/></svg> Launch the simulator</a>
+
+    <!-- ============================== HOME: the simulator ============================== -->
+    <div class="view is-active" id="view-home" data-view="home" data-title="Simulator">
+      <section class="home" id="top" aria-labelledby="hero-title">
+        <div class="container">
+          <div class="home__head">
+            <div class="home__title">
+              <p class="kicker hero__kicker"><span class="live-dot" aria-hidden="true"></span>NASA Space Apps 2026 · Abandoned but not forgotten</p>
+              <h1 class="hero__title" id="hero-title">Last Known <em>Position</em></h1>
+            </div>
+            <div class="home__intro">
+              <p class="hero__lead">Rovers, landers and spacecraft are still out there: parked on the Moon, asleep on Mars, drifting between the stars. This is where they are right now. Fly to the Moon or Mars and tap a glowing pin to meet one.</p>
+              <p class="ticker" aria-hidden="true"><span class="ticker__label">Last signal</span><span class="ticker__text" id="ticker-text">OPPORTUNITY · MERIDIANI PLANUM · 10 JUN 2018</span></p>
+            </div>
           </div>
-          <p class="ticker" aria-hidden="true"><span class="ticker__label">Last signal</span><span class="ticker__text" id="ticker-text">OPPORTUNITY · MERIDIANI PLANUM · 10 JUN 2018</span></p>
+
+          <div id="simulator">
+        <div class="sim" id="sim" data-state="nojs">
+            <div class="sim__stage">
+              <canvas class="sim__canvas" role="img" aria-label="3D view of the solar system. Use the buttons below it to fly to a world or a spacecraft."></canvas>
+              <div class="sim__labels" aria-hidden="true"></div>
+              <div class="sim__pins"></div>
+              <div class="sim-card" hidden></div>
+              <p class="sim__badge"><span class="live-dot" aria-hidden="true"></span><span id="sim-badge">Today · Easy view</span></p>
+              <p class="sim__hint" aria-hidden="true">Drag to look around · click, then scroll to zoom</p>
+              <div class="sim__zoom">
+                <button class="sim-round" type="button" data-zoom="in" aria-label="Zoom in"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                <button class="sim-round" type="button" data-zoom="out" aria-label="Zoom out"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
+              </div>
+              <p class="sim__loading" aria-hidden="true"><span class="sim__spinner"></span>Loading the solar system…</p>
+              <div class="sim__fallback">
+                <p><strong>The 3D simulator could not start here.</strong> It needs a browser with WebGL, and the page must be opened through a web address (not as a file). Everything below still works: the maps, photos, counters and quiz.</p>
+              </div>
+              <nav class="sim-strip" aria-label="Fly to a world or spacecraft"></nav>
+            </div>
+
+            <aside class="sim__side" aria-label="Simulator details and controls">
+              <div class="sim-info" id="sim-info">
+                <p class="kicker">Live · real positions</p>
+                <h3 class="sim-info__title">The solar system</h3>
+                <p class="sim-info__fact">Every world is where it really is on the date shown. Tap a world or a spacecraft to fly there.</p>
+              </div>
+              <div class="sim-tools">
+                <div class="sim-tool">
+                  <span class="sim-tool__label">Time</span>
+                  <div class="sim-tool__row">
+                    <button class="sim-play" id="sim-play" type="button" aria-pressed="false" aria-label="Play time"><svg class="icon" aria-hidden="true"><use href="#i-playtri"/></svg><span>Play</span></button>
+                    <span class="sim-date" id="sim-date">Today</span>
+                    <button class="sim-link" id="sim-today" type="button">Back to today</button>
+                  </div>
+                  <div class="seg" role="group" aria-label="Time speed">
+                    <button type="button" data-speed="1" aria-pressed="true">1 day/s</button>
+                    <button type="button" data-speed="30" aria-pressed="false">1 month/s</button>
+                    <button type="button" data-speed="365.25" aria-pressed="false">1 year/s</button>
+                  </div>
+                  <label class="sim-jump"><span>Jump to a date</span><input type="date" id="sim-date-input" min="1960-01-01" max="2049-12-31"></label>
+                </div>
+                <div class="sim-tool">
+                  <span class="sim-tool__label">Distances</span>
+                  <div class="seg" role="group" aria-label="Distance scale">
+                    <button type="button" data-scale="0" aria-pressed="true">Easy view</button>
+                    <button type="button" data-scale="1" aria-pressed="false">True distances</button>
+                  </div>
+                </div>
+                <div class="sim-tool">
+                  <span class="sim-tool__label">Zoom out to</span>
+                  <div class="seg" role="group" aria-label="Zoom out to">
+                    <button type="button" data-view="inner" aria-pressed="true">Inner planets</button>
+                    <button type="button" data-view="planets" aria-pressed="false">All planets</button>
+                    <button type="button" data-view="deep" aria-pressed="false">Deep space</button>
+                  </div>
+                </div>
+                <p class="sim-note"><strong>What is real:</strong> every position on the date shown, and every pin’s place on the Moon and Mars. <strong>What is enlarged:</strong> the sizes of the worlds and the Moon’s distance from Earth, so you can see them. “Easy view” also squeezes the outer orbits closer.</p>
+              </div>
+            </aside>
+            <p class="sr-only" id="sim-status" role="status" aria-live="polite"></p>
+          </div>
+          <p class="sim-credit">Positions: NASA JPL orbital elements and JPL Horizons. Moon map: NASA SVS / LRO. Mars map: Viking MDIM 2.1 (NASA/JPL/USGS). Ceres map: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA. Other planet maps: Solar System Scope (CC BY 4.0).</p>
+          </div>
         </div>
-
-        <figure class="radar" aria-labelledby="radar-caption">
-          <svg class="radar__svg" viewBox="0 0 560 560" aria-hidden="true" focusable="false">
-            <defs>
-              <radialGradient id="g-earth" cx="40%" cy="35%" r="70%">
-                <stop offset="0" stop-color="#9fd7ff"/><stop offset=".55" stop-color="#2f7fd6"/><stop offset="1" stop-color="#123a73"/>
-              </radialGradient>
-              <linearGradient id="g-sweep" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stop-color="var(--accent)" stop-opacity="0"/>
-                <stop offset="1" stop-color="var(--accent)" stop-opacity=".28"/>
-              </linearGradient>
-            </defs>
-            <g class="radar__rings">
-              <circle cx="280" cy="280" r="70"/>
-              <circle cx="280" cy="280" r="140"/>
-              <circle cx="280" cy="280" r="205"/>
-              <circle cx="280" cy="280" r="262" class="radar__ring--outer"/>
-              <path d="M280 10v540M10 280h540" class="radar__cross"/>
-            </g>
-            <g class="radar__sweep"><path d="M280 280 L542 280 A262 262 0 0 0 465.3 94.7 Z" fill="url(#g-sweep)"/></g>
-            <circle cx="280" cy="280" r="11" fill="url(#g-earth)"/>
-          </svg>
-          <span class="radar__earth">Earth</span>
-          <a class="blip blip--moon" href="#moon" style="--x:39.2%;--y:43.8%"><span class="blip__dot" aria-hidden="true"></span><span class="blip__label">Moon<small>1.3 light-seconds</small></span></a>
-          <a class="blip blip--mars" href="#mars" style="--x:69.1%;--y:66.1%"><span class="blip__dot" aria-hidden="true"></span><span class="blip__label">Mars<small>3–22 light-minutes</small></span></a>
-          <a class="blip blip--deep blip--left" href="#deep" style="--x:80%;--y:29%"><span class="blip__dot" aria-hidden="true"></span><span class="blip__label">New Horizons<small>~9 light-hours</small></span></a>
-          <a class="blip blip--deep" href="#deep" style="--x:26.6%;--y:9.5%"><span class="blip__dot" aria-hidden="true"></span><span class="blip__label">Voyager 1<small>~1 light-day</small></span></a>
-          <figcaption class="radar__caption" id="radar-caption">How long a radio signal from Earth takes to arrive. Rings not to scale: each one is vastly farther than the last.</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <!-- ============================== PROLOGUE ============================== -->
+      </section>
     <section class="section prologue" id="prologue" aria-labelledby="prologue-title">
       <div class="container">
-        <p class="kicker" data-reveal><span class="kicker__num">00</span> Prologue</p>
+        <p class="kicker" data-reveal>The story</p>
         <h2 class="section__title" id="prologue-title" data-reveal>Nothing gets tidied up out there</h2>
         <div class="prologue__grid">
           <div class="prose prose--lead" data-reveal id="prologue-text">
@@ -183,86 +225,47 @@
       </div>
     </section>
 
-    <!-- ============================== SIMULATOR ============================== -->
-    <section class="section sim-section" id="simulator" aria-labelledby="sim-title">
-      <div class="container">
-        <div class="sim-head">
-          <div>
-            <p class="kicker" data-reveal><span class="live-dot" aria-hidden="true"></span>Live simulator</p>
-            <h2 class="section__title" id="sim-title" data-reveal>Fly through the solar system</h2>
-          </div>
-          <p class="prose sim-head__lead" data-reveal>This is where everything really is right now. Fly to the Moon or Mars and tap the glowing pins to meet the machines left there, or chase the five spacecraft that are leaving for good.</p>
+      <section class="section doors-section" aria-labelledby="doors-title">
+        <div class="container">
+          <p class="kicker" data-reveal>Where to next</p>
+          <h2 class="section__title" id="doors-title" data-reveal>Pick a place to explore</h2>
+          <ul class="doors" role="list">
+            <li data-reveal><a class="door" href="#moon" style="--world:var(--moon)">
+              <span class="door__orb orb orb--moon" aria-hidden="true"></span>
+              <span class="door__text"><span class="door__kicker">12 machines · 384,400 km away</span><strong>The Moon</strong><span>Six landing sites, three parked cars and a mirror that still works.</span></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></a></li>
+            <li data-reveal><a class="door" href="#mars" style="--world:var(--mars)">
+              <span class="door__orb orb orb--mars" aria-hidden="true"></span>
+              <span class="door__text"><span class="door__kicker">12 machines · light-minutes away</span><strong>Mars</strong><span>The ghost rovers, a grounded helicopter and two that vanished.</span></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></a></li>
+            <li data-reveal><a class="door" href="#deep" style="--world:var(--deep)">
+              <span class="door__orb orb orb--deep" aria-hidden="true"></span>
+              <span class="door__text"><span class="door__kicker">8 spacecraft · five leaving for good</span><strong>Deep space</strong><span>Voyager and Pioneer, a lander on an asteroid, a telescope that said goodnight.</span></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></a></li>
+            <li data-reveal><a class="door door--small" href="#listening">
+              <span class="door__icon" aria-hidden="true"><svg class="icon"><use href="#i-signal"/></svg></span>
+              <span class="door__text"><strong>Silence board</strong><span>Live counters: who is still talking?</span></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></a></li>
+            <li data-reveal><a class="door door--small" href="#timeline">
+              <span class="door__icon" aria-hidden="true"><svg class="icon"><use href="#i-clock"/></svg></span>
+              <span class="door__text"><strong>Timeline</strong><span>Sixty years, from 1967 to today.</span></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></a></li>
+            <li data-reveal><a class="door door--small" href="#quiz">
+              <span class="door__icon" aria-hidden="true"><svg class="icon"><use href="#i-check"/></svg></span>
+              <span class="door__text"><strong>Quiz</strong><span>Ten questions. Are you a ghost hunter?</span></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></a></li>
+          </ul>
         </div>
-
-        <div class="sim" id="sim" data-state="nojs">
-          <div class="sim__stage">
-            <canvas class="sim__canvas" role="img" aria-label="3D view of the solar system. Use the buttons below it to fly to a world or a spacecraft."></canvas>
-            <div class="sim__labels" aria-hidden="true"></div>
-            <div class="sim__pins"></div>
-            <div class="sim-card" hidden></div>
-            <p class="sim__badge"><span class="live-dot" aria-hidden="true"></span><span id="sim-badge">Today · Easy view</span></p>
-            <p class="sim__hint" aria-hidden="true">Drag to look around · click, then scroll to zoom</p>
-            <div class="sim__zoom">
-              <button class="sim-round" type="button" data-zoom="in" aria-label="Zoom in"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
-              <button class="sim-round" type="button" data-zoom="out" aria-label="Zoom out"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
-            </div>
-            <p class="sim__loading" aria-hidden="true"><span class="sim__spinner"></span>Loading the solar system…</p>
-            <div class="sim__fallback">
-              <p><strong>The 3D simulator could not start here.</strong> It needs a browser with WebGL, and the page must be opened through a web address (not as a file). Everything below still works: the maps, photos, counters and quiz.</p>
-            </div>
-            <nav class="sim-strip" aria-label="Fly to a world or spacecraft"></nav>
-          </div>
-
-          <aside class="sim__side" aria-label="Simulator details and controls">
-            <div class="sim-info" id="sim-info">
-              <p class="kicker">Live · real positions</p>
-              <h3 class="sim-info__title">The solar system</h3>
-              <p class="sim-info__fact">Every world is where it really is on the date shown. Tap a world or a spacecraft to fly there.</p>
-            </div>
-            <div class="sim-tools">
-              <div class="sim-tool">
-                <span class="sim-tool__label">Time</span>
-                <div class="sim-tool__row">
-                  <button class="sim-play" id="sim-play" type="button" aria-pressed="false" aria-label="Play time"><svg class="icon" aria-hidden="true"><use href="#i-playtri"/></svg><span>Play</span></button>
-                  <span class="sim-date" id="sim-date">Today</span>
-                  <button class="sim-link" id="sim-today" type="button">Back to today</button>
-                </div>
-                <div class="seg" role="group" aria-label="Time speed">
-                  <button type="button" data-speed="1" aria-pressed="true">1 day/s</button>
-                  <button type="button" data-speed="30" aria-pressed="false">1 month/s</button>
-                  <button type="button" data-speed="365.25" aria-pressed="false">1 year/s</button>
-                </div>
-                <label class="sim-jump"><span>Jump to a date</span><input type="date" id="sim-date-input" min="1960-01-01" max="2049-12-31"></label>
-              </div>
-              <div class="sim-tool">
-                <span class="sim-tool__label">Distances</span>
-                <div class="seg" role="group" aria-label="Distance scale">
-                  <button type="button" data-scale="0" aria-pressed="true">Easy view</button>
-                  <button type="button" data-scale="1" aria-pressed="false">True distances</button>
-                </div>
-              </div>
-              <div class="sim-tool">
-                <span class="sim-tool__label">Zoom out to</span>
-                <div class="seg" role="group" aria-label="Zoom out to">
-                  <button type="button" data-view="inner" aria-pressed="true">Inner planets</button>
-                  <button type="button" data-view="planets" aria-pressed="false">All planets</button>
-                  <button type="button" data-view="deep" aria-pressed="false">Deep space</button>
-                </div>
-              </div>
-              <p class="sim-note"><strong>What is real:</strong> every position on the date shown, and every pin’s place on the Moon and Mars. <strong>What is enlarged:</strong> the sizes of the worlds and the Moon’s distance from Earth, so you can see them. “Easy view” also squeezes the outer orbits closer.</p>
-            </div>
-          </aside>
-          <p class="sr-only" id="sim-status" role="status" aria-live="polite"></p>
-        </div>
-        <p class="sim-credit">Positions: NASA JPL orbital elements and JPL Horizons. Moon map: NASA SVS / LRO. Mars map: Viking MDIM 2.1 (NASA/JPL/USGS). Other planet maps: Solar System Scope (CC BY 4.0).</p>
-      </div>
-    </section>
+      </section>
+    </div>
 
     <!-- ============================== MOON ============================== -->
+    <div class="view" id="view-moon" data-view="moon" data-title="The Moon">
     <section class="section chapter" id="moon" data-world="moon" aria-labelledby="moon-title">
       <div class="container">
         <div class="chapter__head">
-          <p class="kicker" data-reveal><span class="kicker__num">01</span> The Moon · 384,400 km away</p>
+          <div class="orb orb--moon" aria-hidden="true"></div>
+          <p class="kicker" data-reveal>The Moon · 384,400 km away</p>
           <h2 class="section__title" id="moon-title" data-reveal>A museum with no visitors</h2>
           <div class="prose prose--lead" id="moon-text" data-reveal>
             <p>Six times between 1969 and 1972, astronauts landed on the Moon. Each time they flew home in the top half of their lunar module and left the bottom half behind, along with cameras, tools, science stations and, on the last three trips, a car.</p>
@@ -307,12 +310,15 @@
         </ul>
       </div>
     </section>
+    </div>
 
     <!-- ============================== MARS ============================== -->
+    <div class="view" id="view-mars" data-view="mars" data-title="Mars">
     <section class="section chapter" id="mars" data-world="mars" aria-labelledby="mars-title">
       <div class="container">
         <div class="chapter__head">
-          <p class="kicker" data-reveal><span class="kicker__num">02</span> Mars · <span data-mars-distance>55–401 million km away</span></p>
+          <div class="orb orb--mars" aria-hidden="true"></div>
+          <p class="kicker" data-reveal>Mars · <span data-mars-distance>55–401 million km away</span></p>
           <h2 class="section__title" id="mars-title" data-reveal>The ghost rovers</h2>
           <div class="prose prose--lead" id="mars-text" data-reveal>
             <p>Mars is harder. It has dust storms, freezing nights and air too thin to breathe, and it is so far away that radio signals take minutes to arrive. Even so, NASA has landed nine missions there.</p>
@@ -357,16 +363,20 @@
         </ul>
       </div>
     </section>
+    </div>
 
     <!-- ============================== DEEP SPACE ============================== -->
+    <div class="view" id="view-deep" data-view="deep" data-title="Deep space">
     <section class="section chapter" id="deep" data-world="deep" aria-labelledby="deep-title">
       <div class="container">
         <div class="chapter__head">
-          <p class="kicker" data-reveal><span class="kicker__num">03</span> Deep space · billions of km away</p>
+          <div class="orb orb--deep" aria-hidden="true"></div>
+          <p class="kicker" data-reveal>Deep space · from next door to billions of km away</p>
           <h2 class="section__title" id="deep-title" data-reveal>Messages in a bottle</h2>
           <div class="prose prose--lead" id="deep-text" data-reveal>
             <p>Some machines never land anywhere. Pioneer 10 and 11, Voyager 1 and 2, and New Horizons were flung so fast that the Sun’s gravity will never pull them back. They are leaving for good.</p>
             <p>Because they could drift for millions of years, some carry messages: a gold plaque on each Pioneer, and on each Voyager a golden record of sounds and pictures from Earth.</p>
+            <p>Others never left, and ended up parked in stranger places. Dawn still circles the dwarf planet Ceres with empty fuel tanks. NEAR Shoemaker rests on the asteroid Eros. The Kepler telescope follows Earth around the Sun, switched off.</p>
           </div>
           <button class="listen-btn" type="button" data-listen="#deep-text" hidden><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Listen</span></button>
         </div>
@@ -419,14 +429,31 @@
             <p class="moment__quote">Pioneer 11 will drift past another star, still carrying our picture.</p>
             <button class="text-btn" type="button" data-open="pioneer11">Meet Pioneer 11 <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
           </li>
+          <li class="moment" data-reveal>
+            <p class="kicker">Asteroid Eros · 2001</p>
+            <p class="moment__quote">It had no landing gear. It landed anyway, at walking pace.</p>
+            <button class="text-btn" type="button" data-open="near">Meet NEAR Shoemaker <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+          <li class="moment" data-reveal>
+            <p class="kicker">Ceres · 2018</p>
+            <p class="moment__quote">Out of fuel, still in orbit, and kept off the surface on purpose.</p>
+            <button class="text-btn" type="button" data-open="dawn">Meet Dawn <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
+          <li class="moment" data-reveal>
+            <p class="kicker">Solar orbit · 15 Nov 2018</p>
+            <p class="moment__quote">The last command from Earth was called “goodnight”.</p>
+            <button class="text-btn" type="button" data-open="kepler">Meet Kepler <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+          </li>
         </ul>
       </div>
     </section>
+    </div>
 
     <!-- ============================== SILENCE BOARD ============================== -->
+    <div class="view" id="view-board" data-view="board" data-title="Silence board">
     <section class="section board-section" id="listening" aria-labelledby="board-title">
       <div class="container">
-        <p class="kicker" data-reveal><span class="kicker__num">04</span> Still listening</p>
+        <p class="kicker" data-reveal>Still listening</p>
         <h2 class="section__title" id="board-title" data-reveal>The silence board</h2>
         <div class="prose prose--lead" data-reveal>
           <p>Some missions end with a goodbye. Most just go quiet. Teams keep listening for weeks or months, sometimes sending hundreds of wake-up calls, before they decide a spacecraft is gone. These counters run live.</p>
@@ -444,13 +471,15 @@
         </div>
       </div>
     </section>
+    </div>
 
     <!-- ============================== TIMELINE ============================== -->
+    <div class="view" id="view-timeline" data-view="timeline" data-title="Timeline">
     <section class="section timeline-section" id="timeline" aria-labelledby="timeline-title">
       <div class="container">
         <div class="timeline__head">
           <div>
-            <p class="kicker" data-reveal><span class="kicker__num">05</span> 1967 → 2026</p>
+            <p class="kicker" data-reveal>1967 → 2026</p>
             <h2 class="section__title" id="timeline-title" data-reveal>Sixty years of leaving things behind</h2>
           </div>
           <div class="timeline__controls">
@@ -461,23 +490,27 @@
       </div>
       <ol class="timeline" id="timeline-track" tabindex="0" aria-label="Timeline of events. Scroll sideways or use the arrow keys."></ol>
     </section>
+    </div>
 
     <!-- ============================== QUIZ ============================== -->
+    <div class="view" id="view-quiz" data-view="quiz" data-title="Quiz">
     <section class="section quiz-section" id="quiz" aria-labelledby="quiz-title">
       <div class="container quiz-wrap">
         <div class="quiz__intro">
-          <p class="kicker" data-reveal><span class="kicker__num">06</span> Test yourself</p>
+          <p class="kicker" data-reveal>Test yourself</p>
           <h2 class="section__title" id="quiz-title" data-reveal>Are you a ghost hunter?</h2>
-          <p class="prose" data-reveal>Eight questions. Every answer comes with the real story behind it.</p>
+          <p class="prose" data-reveal>Ten questions. Every answer comes with the real story behind it.</p>
         </div>
         <div class="quiz" id="quiz-card" aria-live="polite"></div>
       </div>
     </section>
+    </div>
 
-    <!-- ============================== EPILOGUE ============================== -->
+    <!-- ============================== ABOUT ============================== -->
+    <div class="view" id="view-about" data-view="about" data-title="About">
     <section class="section epilogue" id="epilogue" aria-labelledby="epilogue-title">
       <div class="container">
-        <p class="kicker" data-reveal><span class="kicker__num">07</span> Epilogue</p>
+        <p class="kicker" data-reveal>About this story</p>
         <h2 class="section__title" id="epilogue-title" data-reveal>What will we leave next?</h2>
         <div class="epilogue__grid">
           <div class="prose prose--lead" id="epilogue-text" data-reveal>
@@ -495,19 +528,26 @@
           </aside>
         </div>
 
+        <div class="resources" id="resources" data-reveal>
+          <h3 class="method__title">Built on NASA’s challenge resources</h3>
+          <p class="resources__intro">The challenge page lists fourteen NASA resources. Every one is used here, and each machine’s story panel marks them with a “Challenge resource” badge. Open a resource to read NASA’s own page, or tap a machine to see what we took from it.</p>
+          <ul class="resources__list" id="resources-list" role="list"></ul>
+        </div>
+
         <div class="method" data-reveal>
           <h3 class="method__title">Sources &amp; method</h3>
-          <p>Every fact in a dossier links to its source, NASA or JPL wherever possible. Moon positions come from LROC’s <a href="https://www.lroc.asu.edu/data/support/downloads/2016_LROC_Coordinates_of_Human_Features.pdf" target="_blank" rel="noopener">Coordinates of Lunar Anthropogenic Features</a>. Mars positions are published landing coordinates. The simulator and the Light Clock place the planets with JPL’s <a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html" target="_blank" rel="noopener">approximate planetary positions</a> and the spacecraft with <a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener">JPL Horizons</a> trajectories. Map imagery: <a href="https://trek.nasa.gov/" target="_blank" rel="noopener">NASA Trek</a> and NASA’s <a href="https://svs.gsfc.nasa.gov/4720" target="_blank" rel="noopener">CGI Moon Kit</a>. Planet textures other than the Moon and Mars: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0). Photos are public-domain NASA images, credited in each dossier. The machines’ first-person logs are imagined, written from real mission facts, and always labeled. Facts checked on <time datetime="2026-11-09">9 November 2026</time>.</p>
+          <p>Every fact in a dossier links to its source, NASA or JPL wherever possible. Moon positions come from LROC’s <a href="https://www.lroc.asu.edu/data/support/downloads/2016_LROC_Coordinates_of_Human_Features.pdf" target="_blank" rel="noopener">Coordinates of Lunar Anthropogenic Features</a>. Mars positions are published landing coordinates. The simulator and the Light Clock place the planets with JPL’s <a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html" target="_blank" rel="noopener">approximate planetary positions</a> and the spacecraft with <a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener">JPL Horizons</a> trajectories. Ceres, Eros and the Kepler telescope follow orbits from JPL Horizons too; the map of Ceres is from NASA’s Dawn mission (shown in grey), and the shape of Eros is a sketch. Map imagery: <a href="https://trek.nasa.gov/" target="_blank" rel="noopener">NASA Trek</a> and NASA’s <a href="https://svs.gsfc.nasa.gov/4720" target="_blank" rel="noopener">CGI Moon Kit</a>. Planet textures other than the Moon and Mars: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0). Photos are public-domain NASA images, credited in each dossier. The machines’ first-person logs are imagined, written from real mission facts, and always labeled. Facts checked on <time datetime="2026-11-09">9 November 2026</time>, and checked again against NASA’s challenge resources on <time datetime="2026-11-13">13 November 2026</time>.</p>
         </div>
       </div>
     </section>
+    </div>
   </main>
 
   <footer class="site-footer">
     <div class="container site-footer__inner">
       <p class="site-footer__brand"><svg class="brand__mark" aria-hidden="true"><use href="#i-logo"/></svg> Last Known Position</p>
       <p class="site-footer__text">Built for the 2026 NASA International Space Apps Challenge: <em>Abandoned but not Forgotten</em>. This is a student project, not an official NASA website. Imagery courtesy of NASA, JPL-Caltech, GSFC, ASU and USGS.</p>
-      <a class="text-btn" href="#top">Back to top</a>
+      <button class="text-btn" type="button" data-scroll-top>Back to top</button>
     </div>
   </footer>
 
@@ -553,12 +593,12 @@
 
   <script src="vendor/leaflet-1.9.4/leaflet.js" defer></script>
   <script type="importmap">{ "imports": { "three": "./vendor/three-0.170.0/three.module.min.js" } }</script>
-  <script src="js/data.js?v=8" defer></script>
-  <script src="js/images.js?v=8" defer></script>
-  <script src="js/core.js?v=8" defer></script>
-  <script src="js/atlas.js?v=8" defer></script>
-  <script src="js/features.js?v=8" defer></script>
-  <script src="js/app.js?v=8" defer></script>
-  <script type="module" src="js/sim.js?v=8"></script>
+  <script src="js/data.js?v=17" defer></script>
+  <script src="js/images.js?v=17" defer></script>
+  <script src="js/core.js?v=17" defer></script>
+  <script src="js/atlas.js?v=17" defer></script>
+  <script src="js/features.js?v=17" defer></script>
+  <script src="js/app.js?v=17" defer></script>
+  <script type="module" src="js/sim.js?v=17"></script>
 </body>
 </html>

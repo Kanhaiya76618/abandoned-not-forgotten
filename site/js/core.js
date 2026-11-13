@@ -17,7 +17,7 @@
 
   LKP.KINDS = {
     lander: "i-lander", rover: "i-rover", helicopter: "i-helicopter", probe: "i-probe",
-    reflector: "i-reflector", seismometer: "i-seismometer", impact: "i-impact", orbiter: "i-orbiter"
+    reflector: "i-reflector", seismometer: "i-seismometer", impact: "i-impact", orbiter: "i-orbiter", telescope: "i-telescope"
   };
 
   LKP.byId = {};
@@ -223,7 +223,15 @@
 
   function julianDay(date) { return date.getTime() / 86400000 + 2440587.5; }
 
+  /* Small worlds and craft on closed orbits: fixed JPL Horizons elements (LKP.smallOrbits), two-body motion. */
+  const SMALL = LKP.smallOrbits || {};
+
   function elementsAt(id, date) {
+    const f = SMALL[id];
+    if (f) {
+      const M = f.M + f.n * (julianDay(date) - SMALL.epochJD);
+      return { a: f.a, e: f.e, I: f.i * DEG, M: ((M % 360 + 540) % 360 - 180) * DEG, om: f.peri * DEG, Om: f.node * DEG };
+    }
     const k = ELEMENTS[id];
     const T = (julianDay(date) - 2451545.0) / 36525;
     const v = function (x) { return x[0] + x[1] * T; };
@@ -265,10 +273,11 @@
     return { dir: [Math.cos(lat) * Math.cos(lon), Math.cos(lat) * Math.sin(lon), Math.sin(lat)], km: 385001 - 20905 * Math.cos(M) };
   }
 
-  /* A far-away spacecraft: straight-line motion from its JPL Horizons position and velocity. */
+  /* A spacecraft: on a closed orbit, or (far away) straight-line motion from its JPL Horizons position and velocity. */
   function probe(id, date) {
     const p = LKP.probes && LKP.probes[id];
     if (!p || date < LKP.parseDate(p.validFrom).date) return null;
+    if (p.orbit) return helio(id, date);
     const dt = julianDay(date) - LKP.probeEpochJD;
     return [p.p[0] + p.v[0] * dt, p.p[1] + p.v[1] * dt, p.p[2] + p.v[2] * dt];
   }
@@ -276,7 +285,7 @@
   function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]); }
 
   LKP.orbit = {
-    ids: Object.keys(ELEMENTS),
+    ids: Object.keys(ELEMENTS).concat((LKP.bodies || []).filter(function (b) { return SMALL[b.id]; }).map(function (b) { return b.id; })),
     helio: helio,
     path: path,
     moon: moon,
@@ -284,6 +293,10 @@
     dist: dist,
     /** Distance from Earth, in km, of a heliocentric position (au). */
     fromEarthKm: function (vec, date) { return dist(vec, helio("earth", date)) * AU_KM; },
-    probeSpeedKmS: function (id) { const v = LKP.probes[id].v; return Math.hypot(v[0], v[1], v[2]) * AU_KM / 86400; }
+    probeSpeedKmS: function (id, date) {
+      const p = LKP.probes[id];
+      if (p.orbit) { const d = date || new Date(); return dist(helio(id, d), helio(id, new Date(d.getTime() + 3600000))) * AU_KM / 3600; }
+      return Math.hypot(p.v[0], p.v[1], p.v[2]) * AU_KM / 86400;
+    }
   };
 })();

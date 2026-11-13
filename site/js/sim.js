@@ -35,12 +35,14 @@ const VIS = {
   saturn: { r: 3.7, tex: "saturn.jpg", tilt: 26.73, ring: true },
   uranus: { r: 2.5, tex: "uranus.jpg", tilt: 97.77 },
   neptune: { r: 2.4, tex: "neptune.jpg", tilt: 28.32 },
-  pluto: { r: 0.7 }
+  pluto: { r: 0.7 },
+  eros: { r: 0.42, rock: true },
+  ceres: { r: 0.6, tex: "ceres.jpg" }
 };
-const STRIP_ORDER = ["sun", "mercury", "venus", "earth", "moon", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"];
-const PROBE_ORDER = ["newhorizons", "pioneer11", "pioneer10", "voyager2", "voyager1"];
-const VIEWS = { inner: 1.75, planets: 31, deep: 205 }; // au that each overview should fit
-const LABEL_PRIORITY = ["earth", "mars", "moon", "sun", "jupiter", "saturn", "voyager1", "voyager2", "newhorizons", "pioneer10", "pioneer11", "venus", "mercury", "uranus", "neptune", "pluto"];
+const STRIP_ORDER = ["sun", "mercury", "venus", "earth", "moon", "mars", "eros", "ceres", "jupiter", "saturn", "uranus", "neptune", "pluto"];
+const PROBE_ORDER = ["kepler", "newhorizons", "pioneer11", "pioneer10", "voyager2", "voyager1"];
+const VIEWS = { inner: 1.85, planets: 31, deep: 205 }; // au that each overview should fit
+const LABEL_PRIORITY = ["earth", "mars", "moon", "sun", "jupiter", "saturn", "voyager1", "voyager2", "newhorizons", "pioneer10", "pioneer11", "venus", "mercury", "uranus", "neptune", "pluto", "ceres", "eros", "kepler"];
 
 const root = document.getElementById("sim");
 const S = {
@@ -89,7 +91,10 @@ function boot() {
   document.addEventListener("visibilitychange", loop);
 }
 
-function reveal() { LKP.scrollToEl(root, "center"); }
+function reveal() {
+  if (LKP.showView) LKP.showView("home");
+  LKP.scrollToEl(document.getElementById("simulator") || root);
+}
 
 /* Create the 3D scene the first time it is needed. Returns false if WebGL is unavailable. */
 function start() {
@@ -162,7 +167,7 @@ function start() {
     tilt.rotation.z = (vis.tilt || 0) * DEG;
     group.add(tilt);
     const seg = vis.detail ? 128 : 64;
-    const geo = new THREE.SphereGeometry(vis.r, seg, seg / 2);
+    const geo = vis.rock ? rockGeometry(vis.r) : new THREE.SphereGeometry(vis.r, seg, seg / 2);
     let mat;
     if (def.id === "sun") {
       mat = new THREE.MeshBasicMaterial({ map: tex(vis.tex) });
@@ -215,7 +220,7 @@ function start() {
     group.add(dot);
     hitList.push(dot);
     const trail = new THREE.Line(
-      new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(25 * 3), 3)),
+      new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array((LKP.probes[id].orbit ? 121 : 25) * 3), 3)),
       new THREE.LineBasicMaterial({ color: 0x9fb7ff, transparent: true, opacity: 0.45, depthWrite: false })
     );
     trail.frustumCulled = false;
@@ -245,6 +250,31 @@ function start() {
   renderInfo();
   syncHud();
   return true;
+}
+
+/* A lumpy, stretched rock for an asteroid: a sketch of the shape, not a measured model. */
+function rockGeometry(r) {
+  const W = 72, H = 48;
+  const geo = new THREE.SphereGeometry(r, W, H);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    v1.fromBufferAttribute(pos, i).divideScalar(r);
+    const bump = Math.sin(v1.x * 5.1 + 1.3) * Math.sin(v1.y * 4.3 + 0.4) * Math.sin(v1.z * 4.9 + 2.1) +
+      0.45 * Math.sin(v1.x * 11 + v1.z * 8) * Math.sin(v1.y * 9 + 1) + 0.2 * Math.sin(v1.x * 23 + 2) * Math.sin(v1.y * 19) * Math.sin(v1.z * 21);
+    const waist = 1 - 0.2 * Math.exp(-Math.pow((v1.x - 0.1) / 0.32, 2));
+    const k = r * (1 + 0.075 * bump);
+    pos.setXYZ(i, v1.x * k * 1.5, v1.y * k * 0.54 * waist, v1.z * k * 0.5 * waist);
+  }
+  geo.computeVertexNormals();
+  /* The sphere's seam has two copies of each vertex: share their normals so no line shows. */
+  const nor = geo.attributes.normal;
+  for (let y = 0; y <= H; y++) {
+    const i = y * (W + 1), j = i + W;
+    v1.fromBufferAttribute(nor, i).add(v2.fromBufferAttribute(nor, j)).normalize();
+    nor.setXYZ(i, v1.x, v1.y, v1.z);
+    nor.setXYZ(j, v1.x, v1.y, v1.z);
+  }
+  return geo;
 }
 
 function glowTexture() {
@@ -309,11 +339,17 @@ function updatePositions() {
     o.au = au;
     toScene(au, o.group.position);
     const arr = o.trail.geometry.attributes.position.array;
-    const from = LKP.parseDate(LKP.probes[id].validFrom).date.getTime();
-    for (let i = 0; i < 25; i++) {
-      const t = Math.max(from, d.getTime() - i * 365.25 * 86400000);
-      toScene(orbit.probe(id, new Date(t)), v2);
-      arr[i * 3] = v2.x; arr[i * 3 + 1] = v2.y; arr[i * 3 + 2] = v2.z;
+    if (LKP.probes[id].orbit) {
+      /* It circles the Sun, so draw its whole orbit instead of a trail. */
+      const pts = orbit.path(id, d, 120);
+      for (let i = 0; i < pts.length; i++) { toScene(pts[i], v2); arr[i * 3] = v2.x; arr[i * 3 + 1] = v2.y; arr[i * 3 + 2] = v2.z; }
+    } else {
+      const from = LKP.parseDate(LKP.probes[id].validFrom).date.getTime();
+      for (let i = 0; i < 25; i++) {
+        const t = Math.max(from, d.getTime() - i * 365.25 * 86400000);
+        toScene(orbit.probe(id, new Date(t)), v2);
+        arr[i * 3] = v2.x; arr[i * 3 + 1] = v2.y; arr[i * 3 + 2] = v2.z;
+      }
     }
     o.trail.geometry.attributes.position.needsUpdate = true;
   });
@@ -358,6 +394,7 @@ function flyTo(target, position, followId, instant) {
 
 /* Whole-system views. */
 function view(name, instant) {
+  if (!VIEWS[name]) return;
   S.focus = null;
   S.view = name;
   hideCard(true);
@@ -374,6 +411,7 @@ function focus(id, opts) {
   const o = O[id];
   if (!o) return;
   if (o.kind === "probe" && !o.group.visible) { setDate(new Date()); }
+  const same = S.focus === id; // already here: keep the pins, just turn the globe
   S.focus = id;
   S.view = null;
   hideCard(true);
@@ -391,13 +429,13 @@ function focus(id, opts) {
     const sunward = v1.copy(pos).normalize().negate();
     const side = v2.crossVectors(sunward, v3.set(0, 1, 0)).normalize();
     dir.copy(sunward).multiplyScalar(0.8).addScaledVector(side, 0.5).add(v3.set(0, 0.28, 0));
-    dist = o.r * (o.sites ? 3.4 : 4.4) * fit;
+    dist = o.r * (o.sites ? 3.4 : VIS[id] && VIS[id].rock ? 5.6 : 4.4) * fit;
   }
   dir.normalize();
   controls.minDistance = o.kind === "probe" ? 4 : o.r * 1.22;
   flyTo(pos.clone(), pos.clone().addScaledVector(dir, dist), id);
   lastFocusPos.copy(pos);
-  buildPins();
+  if (same) S.fly.keepPins = true; else buildPins();
   renderInfo();
   syncHud();
   if (els.status) els.status.textContent = "Now viewing " + o.name + ".";
@@ -409,6 +447,7 @@ function focusGhost(ghostId) {
   const g = LKP.byId[ghostId];
   if (!g) return;
   if (O[ghostId] && O[ghostId].kind === "probe") { focus(ghostId); return; }
+  if (g.at && O[g.at]) { focus(g.at); return; } // it orbits or rests on a small world
   const body = O[g.world];
   if (!body) return;
   if (!g.loc) { focus(g.world); return; }
@@ -418,7 +457,7 @@ function focusGhost(ghostId) {
   const dir = latLon(l.lat, l.lon, 1).applyMatrix4(body.mesh.matrixWorld).sub(body.group.position).normalize();
   S.hotSite = l.site;
   focus(g.world, { dir });
-  setTimeout(() => { S.hotSite = null; $$(".sim-pin.is-hot", els.pins).forEach((p) => p.classList.remove("is-hot")); }, 6000);
+
 }
 
 /* Latitude / east longitude on a world -> a point in that world's own frame.
@@ -461,10 +500,10 @@ function setScale(target) {
 function buildStrip() {
   const chip = (id, name, color, n) =>
     '<button class="sim-chip" type="button" data-focus="' + id + '" aria-pressed="false"><i style="--c:' + color + '"></i>' + esc(name) +
-    (n ? '<b class="sim-chip__n" title="' + n + ' machines here">' + n + "</b>" : "") + "</button>";
+    (n ? '<b class="sim-chip__n" title="' + n + (n === 1 ? " machine" : " machines") + ' here">' + n + "</b>" : "") + "</button>";
   const count = (w) => LKP.ghosts.filter((g) => g.world === w).length;
   els.strip.innerHTML =
-    STRIP_ORDER.map((id) => { const b = LKP.bodies.find((x) => x.id === id); return chip(id, b.name.replace("The ", ""), b.color, b.world ? count(b.world) : 0); }).join("") +
+    STRIP_ORDER.map((id) => { const b = LKP.bodies.find((x) => x.id === id); return chip(id, b.name.replace("The ", ""), b.color, b.world ? count(b.world) : b.home ? b.home.length : 0); }).join("") +
     '<span class="sim-strip__gap" aria-hidden="true"></span>' +
     PROBE_ORDER.map((id) => chip(id, LKP.byId[id].name, LKP.byId[id].status === "working" ? "#7df0d4" : "#c9d3e3")).join("");
 }
@@ -486,11 +525,7 @@ function buildPins() {
     el.className = "sim-pin sim-pin--" + LKP.siteStatus(site) + (S.hotSite === site.id ? " is-hot" : "");
     el.setAttribute("aria-label", (n === 1 ? site.ghosts[0].name : site.name + ", " + n + " machines") + ". Open.");
     el.innerHTML = '<span class="sim-pin__dot"></span>' + (n > 1 ? '<span class="sim-pin__n">' + n + "</span>" : "");
-    el.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (n === 1) LKP.openDossier(site.ghosts[0].id, el);
-      else showCard(site, el, true);
-    });
+    el.addEventListener("click", (e) => { e.stopPropagation(); selectSite(site, el); });
     el.addEventListener("pointerenter", () => { if (!S.cardSite) showCard(site, el, false); });
     el.addEventListener("pointerleave", () => { if (!S.cardSite) hideCard(); });
     el.addEventListener("focus", () => { if (!S.cardSite) showCard(site, el, false); });
@@ -500,27 +535,29 @@ function buildPins() {
   });
 }
 
-/* Preview card for a pin: a photo first, so a place is never "just a dot". */
-function showCard(site, pinEl, sticky) {
-  const gs = site.ghosts;
-  if (sticky) {
-    S.cardSite = site.id;
-    els.card.innerHTML = '<p class="sim-card__site">' + esc(site.name) + "</p><ul class=\"sim-card__list\" role=\"list\">" + gs.map((g) =>
-      '<li><button class="sim-card__item" type="button" data-open="' + g.id + '">' + LKP.thumb(g, "sim-card__thumb") +
-      "<span><strong>" + esc(g.name) + "</strong><small>" + esc(LKP.STATUS[g.status].label) + "</small></span></button></li>").join("") + "</ul>";
-    els.card.classList.add("is-sticky");
-  } else {
-    const g = gs[0], im = LKP.img(g);
-    els.card.innerHTML = (im ? '<img class="sim-card__img" src="' + im.thumb + '" alt="" width="400" height="300">' : "") +
-      '<div class="sim-card__body"><p class="sim-card__site">' + esc(gs.length > 1 ? site.name : g.mission.split(" · ")[0] + " · " + g.year) + "</p>" +
-      "<strong>" + esc(gs.length > 1 ? gs.length + " machines are here" : g.name) + "</strong>" +
-      "<small>" + (gs.length > 1 ? "Click to choose one" : esc(LKP.STATUS[g.status].label) + " · click to open") + "</small></div>";
-    els.card.classList.remove("is-sticky");
+/* Tapping a pin: turn the globe to face it, mark it, and open its full story in the panel on the right. */
+function selectSite(site, pinEl) {
+  const o = O[S.focus];
+  hideCard(true);
+  S.hotSite = site.id;
+  if (o && o.sites) {
+    o.group.updateWorldMatrix(true, true);
+    const dir = latLon(site.lat, site.lon, 1).applyMatrix4(o.mesh.matrixWorld).sub(o.group.position).normalize();
+    focus(S.focus, { dir });
   }
+  LKP.openDossier(site.ghosts[0].id, pinEl);
+}
+
+/* Preview card for a pin: a photo first, so a place is never "just a dot". */
+function showCard(site, pinEl) {
+  const gs = site.ghosts, g = gs[0], im = LKP.img(g), many = gs.length > 1;
+  els.card.innerHTML = (im ? '<img class="sim-card__img" src="' + im.thumb + '" alt="" width="400" height="300">' : "") +
+    '<div class="sim-card__body"><p class="sim-card__site">' + esc(many ? site.name : g.mission.split(" · ")[0] + " · " + g.year) + "</p>" +
+    "<strong>" + esc(many ? gs.map((x) => x.name).join(" + ") : g.name) + "</strong>" +
+    "<small>" + (many ? gs.length + " machines here" : esc(LKP.STATUS[g.status].label)) + " · click for the full story</small></div>";
   els.card.hidden = false;
   els.card._pin = pinEl;
   placeCard();
-  if (sticky) { const first = $(".sim-card__item", els.card); if (first) first.focus({ preventScroll: true }); }
 }
 function hideCard(force) {
   if (S.cardSite && !force) return;
@@ -568,15 +605,17 @@ function renderInfo() {
     h = '<p class="kicker">Spacecraft · ' + esc(LKP.STATUS[g.status].label) + '</p><h3 class="sim-info__title">' + esc(g.name) + "</h3>" +
       (im ? '<img class="sim-info__img" src="' + im.thumb + '" alt="' + esc(im.caption) + '" width="400" height="300">' : "") +
       '<dl class="sim-stats">' + statRow("From the Sun", "sun", "") + statRow("From Earth", "earth", "") + statRow("Signal travel time", "light", "") +
-      statRow("Speed", null, orbit.probeSpeedKmS(id).toFixed(1) + " km every second") + "</dl>" +
+      statRow("Speed", null, orbit.probeSpeedKmS(id, S.date).toFixed(1) + " km every second") + "</dl>" +
       '<p class="sim-info__fact">' + esc(g.hook) + (p.tracked ? "" : " This is its predicted position: nobody has heard from it since " + LKP.fmtDate(g.since) + ".") + "</p>" +
       '<div class="sim-info__actions"><button class="btn btn--small btn--primary" type="button" data-open="' + id + '">Read its story</button></div>';
   } else {
     const d = O[id].def, n = d.world ? LKP.ghosts.filter((g) => g.world === d.world).length : 0;
     h = '<p class="kicker">' + esc(d.type) + '</p><h3 class="sim-info__title">' + esc(d.name) + "</h3>" +
       '<dl class="sim-stats">' + (id === "sun" ? "" : statRow("From the Sun", "sun", "")) + (id === "earth" ? "" : statRow("From Earth", "earth", "") + statRow("Light travel time", "light", "")) +
-      statRow("Diameter", null, LKP.fmtInt(d.diameterKm) + " km") + "</dl>" +
+      (d.sizeLabel ? statRow("Size", null, esc(d.sizeLabel)) : statRow("Diameter", null, LKP.fmtInt(d.diameterKm) + " km")) + "</dl>" +
       '<p class="sim-info__fact">' + esc(d.fact) + "</p>" +
+      (d.home ? '<p class="sim-info__sub">' + esc(d.homeLabel) + '</p><div class="sim-visitors">' + d.home.map((gid) =>
+        '<button class="sim-visitor" type="button" data-open="' + gid + '">' + LKP.thumb(LKP.byId[gid], "sim-visitor__img") + "<span>" + esc(LKP.byId[gid].name) + "</span></button>").join("") + "</div>" : "") +
       (n ? '<p class="sim-info__call"><strong>' + n + " machines</strong> in this story came here. Tap a glowing pin on the globe to meet one.</p>" +
         '<div class="sim-info__actions"><a class="btn btn--small" href="#' + d.world + '">See the full list</a></div>' : "") +
       (d.visitedBy ? '<p class="sim-info__sub">Visited by</p><div class="sim-visitors">' + d.visitedBy.map((gid) =>
@@ -627,7 +666,7 @@ function bindControls() {
     const sc = e.target.closest("[data-scale]");
     if (sc) { if (start()) setScale(Number(sc.dataset.scale)); return; }
     const vw = e.target.closest("[data-view]");
-    if (vw) { if (start()) view(vw.dataset.view); return; }
+    if (vw && root.contains(vw) && VIEWS[vw.dataset.view]) { if (start()) view(vw.dataset.view); return; }
     const sp = e.target.closest("[data-speed]");
     if (sp) { S.speed = Number(sp.dataset.speed); if (start()) { setPlaying(true); syncHud(); } return; }
     const z = e.target.closest("[data-zoom]");
@@ -715,7 +754,7 @@ function updateLabels(W, H) {
 
 function updatePins(W, H) {
   const o = O[S.focus];
-  const on = !!(o && o.pinList && !S.fly && camera.position.distanceTo(o.group.position) < o.r * 14);
+  const on = !!(o && o.pinList && (!S.fly || S.fly.keepPins) && camera.position.distanceTo(o.group.position) < o.r * 14);
   if (els.pins._on !== on) { els.pins._on = on; els.pins.classList.toggle("is-on", on); if (!on) hideCard(true); }
   if (!on) return;
   o.group.updateWorldMatrix(true, true);
@@ -729,7 +768,8 @@ function updatePins(W, H) {
     p.x = (v1.x * 0.5 + 0.5) * W;
     p.y = (-v1.y * 0.5 + 0.5) * H;
     p.el.style.transform = "translate(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px)";
-    if (S.hotSite === p.site.id) p.el.classList.add("is-hot");
+    const hot = S.hotSite === p.site.id;
+    if (p.hot !== hot) { p.hot = hot; p.el.classList.toggle("is-hot", hot); }
   }
   if (!els.card.hidden) {
     const pin = o.pinList.find((p) => p.el === els.card._pin);

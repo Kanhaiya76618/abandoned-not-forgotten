@@ -39,16 +39,7 @@
     const g = site.ghosts[0], n = site.ghosts.length;
     return '<span class="map-tip">' + LKP.thumb(g, "map-tip__img") + '<span class="map-tip__text"><strong>' +
       LKP.esc(n > 1 ? site.name.split(" · ")[0] : g.name) + "</strong><small>" +
-      (n > 1 ? n + " machines here · click to choose" : LKP.STATUS[g.status].label + " · click to open") + "</small></span></span>";
-  }
-
-  function popupHtml(site) {
-    return '<p class="site-pop__title">' + LKP.esc(site.name) + '</p><ul class="site-pop__list">' +
-      site.ghosts.map(function (g) {
-        return '<li><button class="site-pop__btn" type="button" data-open="' + g.id + '">' + LKP.thumb(g, "site-pop__img") +
-          "<span><strong>" + LKP.esc(g.name) + '</strong><small><span class="site-pop__dot" style="--c:' + STATUS_COLOR[g.status] + '"></span>' +
-          LKP.STATUS[g.status].label + "</small></span></button></li>";
-      }).join("") + "</ul>";
+      (n > 1 ? n + " machines here" : LKP.STATUS[g.status].label) + " · click for the full story</small></span></span>";
   }
 
   function fmtCoord(v, pos, neg) { return Math.abs(v).toFixed(2) + "° " + (v >= 0 ? pos : neg); }
@@ -93,18 +84,11 @@
       const node = marker.getElement();
       if (node) {
         node.setAttribute("role", "button");
-        node.setAttribute("aria-label", single ? label + ": open dossier" : label + ": show what is here");
+        node.setAttribute("aria-label", label + ": open the full story");
       }
 
-      if (single) {
-        marker.on("click", function () { LKP.openDossier(site.ghosts[0].id, node); });
-      } else {
-        marker.bindPopup(popupHtml(site), { maxWidth: 320, minWidth: 250, autoPanPadding: [24, 24] });
-        marker.on("popupopen", function (e) {
-          const first = e.popup.getElement() && e.popup.getElement().querySelector(".site-pop__btn");
-          if (first) first.focus({ preventScroll: true });
-        });
-      }
+      /* One click always opens the full story on the right; machines that share the spot are listed inside it. */
+      marker.on("click", function () { LKP.openDossier(site.ghosts[0].id, node); });
 
       marker.on("mouseover focus", function () { site.ghosts.forEach(function (g) { LKP.bus.emit("hot", { id: g.id, on: true, from: "map" }); }); });
       marker.on("mouseout blur", function () { site.ghosts.forEach(function (g) { LKP.bus.emit("hot", { id: g.id, on: false, from: "map" }); }); });
@@ -146,6 +130,7 @@
     if (!g || !g.loc) return;
     const atlasEl = LKP.$('[data-atlas="' + g.world + '"]');
     if (!atlasEl) return;
+    if (LKP.showView) LKP.showView(g.world); // the map lives on that world's tab
     const map = createMap(g.world, atlasEl.querySelector(".atlas__map"));
     LKP.scrollToEl(atlasEl, "center");
     if (!map) return;
@@ -168,6 +153,8 @@
 
   function init() {
     LKP.bus.on("hot", function (d) { if (d.from !== "map") hot(d.id, d.on); });
+    /* A map built while its tab was hidden needs to re-measure itself when the tab opens. */
+    LKP.bus.on("view", function (name) { if (state.maps[name]) setTimeout(function () { state.maps[name].invalidateSize(); }, 30); });
 
     const atlases = LKP.$$("[data-atlas]");
     if (!("IntersectionObserver" in window)) {

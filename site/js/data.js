@@ -18,13 +18,14 @@
      voice      imagined log lines (machine voice)
      learned    the science it made possible
      facts      [label, value] pairs
-     sources    [{t: title, u: url}]
+     sources    [{t: title, u: url, o: 1 when it is an official challenge resource}]
+     at         id of the small world it orbits or rests on (simulator)
    ========================================================================== */
 (function () {
   "use strict";
 
   var LKP = (window.LKP = window.LKP || {});
-  LKP.checked = "2026-11-09";
+  LKP.checked = "2026-11-13";
 
   /* ---------- Shared sources --------------------------------------------- */
   var S = {
@@ -52,9 +53,9 @@
     vikingLander: { t: "NASA Science: Viking Lander", u: "https://science.nasa.gov/3d-resources/viking-lander/" },
     viking1Gsfc: { t: "NASA Goddard: Viking 1 lander", u: "https://science.gsfc.nasa.gov/attic/mola/viking1.html" },
     viking1Hirise: { t: "HiRISE (Univ. of Arizona): Viking Lander 1 seen from orbit", u: "https://www.uahirise.org/PSP_001521_2025" },
-    viking1Wiki: { t: "Wikipedia: Viking 1 (how contact was lost, with references)", u: "https://en.wikipedia.org/wiki/Viking_1" },
+    viking1Nasa: { t: "NASA Science: Viking 1", u: "https://science.nasa.gov/mission/viking-1/", o: 1 },
     viking2Nasa: { t: "NASA Science: Viking 2", u: "https://science.nasa.gov/mission/viking-2/" },
-    pathfinderNasa: { t: "NASA Science: Mars Pathfinder", u: "https://science.nasa.gov/mission/mars-pathfinder/" },
+    pathfinderNasa: { t: "NASA Science: Mars Pathfinder", u: "https://science.nasa.gov/mission/mars-pathfinder/", o: 1 },
     sojournerSpace: { t: "Space.com: Sojourner, the first successful Mars rover", u: "https://www.space.com/17745-mars-pathfinder-sojourner-rover.html" },
     spiritNasa: { t: "NASA Science: Spirit", u: "https://science.nasa.gov/mission/mer-spirit/" },
     spiritPS: { t: "The Planetary Society: NASA ends Spirit mission", u: "https://www.planetary.org/articles/05-26-mer-update" },
@@ -64,9 +65,9 @@
     oppNasa: { t: "NASA Science: Opportunity", u: "https://science.nasa.gov/mission/mer-opportunity/" },
     phoenixJPL: { t: "NASA JPL: Phoenix Mars Lander is silent, new image shows damage", u: "https://www.jpl.nasa.gov/news/phoenix-mars-lander-is-silent-new-image-shows-damage/" },
     phoenixNasa: { t: "NASA Science: Phoenix", u: "https://science.nasa.gov/mission/phoenix/" },
-    insightNasa: { t: "NASA Science: InSight", u: "https://science.nasa.gov/mission/insight/" },
+    insightNasa: { t: "NASA Science: InSight", u: "https://science.nasa.gov/mission/insight/", o: 1 },
     ingenuityJPL: { t: "NASA JPL: Ingenuity Mars Helicopter team says goodbye … for now", u: "https://www.jpl.nasa.gov/news/nasas-ingenuity-mars-helicopter-team-says-goodbye-for-now" },
-    ingenuityNasa: { t: "NASA Science: Ingenuity Mars Helicopter", u: "https://science.nasa.gov/mission/mars-2020-perseverance/ingenuity-mars-helicopter/" },
+    ingenuityNasa: { t: "NASA Science: Ingenuity Mars Helicopter", u: "https://science.nasa.gov/mission/mars-2020-perseverance/ingenuity-mars-helicopter/", o: 1 },
     wrightSpace: { t: "Space.com: Wright Flyer fabric flies again on Ingenuity", u: "https://www.space.com/ingenuity-mars-helicopter-wright-flyer-fabric" },
     mplNasa: { t: "NASA Science: Mars Polar Lander / Deep Space 2", u: "https://science.nasa.gov/mission/mars-polar-lander-deep-space-2/" },
     mcoSMA: { t: "NASA: Mars Climate Orbiter Mishap Investigation Board, Phase I report (1999)", u: "https://llis.nasa.gov/llis_lib/pdf/1009464main1_0641-mr.pdf" },
@@ -89,7 +90,25 @@
     marsFacts: { t: "NASA Science: Mars facts", u: "https://science.nasa.gov/mars/facts/" },
     jplElements: { t: "NASA JPL Solar System Dynamics: Approximate positions of the planets", u: "https://ssd.jpl.nasa.gov/planets/approx_pos.html" },
     horizons: { t: "NASA JPL Horizons System (spacecraft trajectories)", u: "https://ssd.jpl.nasa.gov/horizons/" },
-    solarSystem: { t: "NASA Science: Solar System exploration", u: "https://science.nasa.gov/solar-system/" }
+    solarSystem: { t: "NASA Science: Solar System exploration", u: "https://science.nasa.gov/solar-system/" },
+    /* Official resources from the challenge page (o: 1), plus pages that back up the three machines they added */
+    nssdc: { t: "NASA Space Science Data Coordinated Archive (NSSDCA)", u: "https://nssdc.gsfc.nasa.gov/", o: 1 },
+    nssdcApollo11: { t: "NASA NSSDCA: Apollo 11 Lunar Module / EASEP", u: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C", o: 1 },
+    nssdcApollo12: { t: "NASA NSSDCA: Apollo 12 Lunar Module / ALSEP", u: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-099C", o: 1 },
+    nssdcApollo15: { t: "NASA NSSDCA: Apollo 15 Lunar Module / ALSEP (carried the first rover)", u: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1971-063C", o: 1 },
+    surveyor3Nasa: { t: "NASA Science: Surveyor 3", u: "https://science.nasa.gov/mission/surveyor-3/", o: 1 },
+    merNasa: { t: "NASA Science: Mars Exploration Rovers, Spirit and Opportunity", u: "https://science.nasa.gov/mission/mars-exploration-rovers-spirit-and-opportunity/", o: 1 },
+    pioneer10Nasa: { t: "NASA Science: Pioneer 10", u: "https://science.nasa.gov/mission/pioneer-10/", o: 1 },
+    dawnNasa: { t: "NASA Science: Dawn", u: "https://science.nasa.gov/mission/dawn/", o: 1 },
+    dawnEnd: { t: "NASA JPL: NASA’s Dawn mission to asteroid belt comes to end (2018)", u: "https://www.jpl.nasa.gov/news/nasas-dawn-mission-to-asteroid-belt-comes-to-end/" },
+    dawnNssdc: { t: "NASA NSSDCA: Dawn", u: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2007-043A" },
+    ceresFacts: { t: "NASA Science: Ceres facts", u: "https://science.nasa.gov/dwarf-planets/ceres/facts/" },
+    nearNasa: { t: "NASA Science: NEAR Shoemaker", u: "https://science.nasa.gov/mission/near-shoemaker/", o: 1 },
+    erosNasa: { t: "NASA Science: 433 Eros", u: "https://science.nasa.gov/solar-system/asteroids/433-eros/" },
+    keplerNasa: { t: "NASA Science: Kepler / K2", u: "https://science.nasa.gov/mission/kepler/", o: 1 },
+    keplerEnd: { t: "NASA: NASA retires Kepler space telescope, passes planet-hunting torch (2018)", u: "https://www.nasa.gov/news-release/nasa-retires-kepler-space-telescope-passes-planet-hunting-torch/" },
+    keplerGoodnight: { t: "NASA JPL: Kepler telescope bids “goodnight” with final commands (2018)", u: "https://www.jpl.nasa.gov/news/kepler-telescope-bids-goodnight-with-final-commands/" },
+    keplerNssdc: { t: "NASA NSSDCA: Kepler", u: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2009-011A" }
   };
   LKP.sources = S;
 
@@ -120,7 +139,7 @@
         "The crew brought back about 21.5 kg (47.5 lb) of Moon rock and soil from this spot for scientists to study."
       ],
       facts: [["Landed", "20 Jul 1969"], ["Moonwalkers", "Neil Armstrong, Buzz Aldrin"], ["Time on the Moon", "about 21½ hours"], ["Position", "0.674° N, 23.473° E"]],
-      sources: [S.apollo11, S.lroc]
+      sources: [S.nssdcApollo11, S.apollo11, S.lroc]
     },
     {
       id: "lrrr11",
@@ -146,7 +165,7 @@
         "Precise Moon-distance measurements are used to test Einstein’s theory of gravity."
       ],
       facts: [["Placed", "21 Jul 1969"], ["Mirrors", "100 corner cubes"], ["Power needed", "None"], ["Status", "Still used for lunar laser ranging"]],
-      sources: [S.jplLLR, S.jila]
+      sources: [S.jplLLR, S.jila, S.nssdcApollo11]
     },
     {
       id: "surveyor3",
@@ -156,11 +175,11 @@
       world: "moon", kind: "lander", status: "silent", year: 1967,
       place: "Ocean of Storms",
       loc: [{ lat: -3.01612, lon: -23.41791, site: "storms", siteName: "Ocean of Storms · Apollo 12 & Surveyor 3" }],
-      since: "1967", sinceLabel: "Silent since",
+      since: "1967-05-04", sinceLabel: "Last contact",
       hook: "The only robot that humans have ever walked up to on another world.",
       story: [
-        "Surveyor 3 landed in the Ocean of Storms in April 1967 to test the ground before astronauts arrived. It dug into the soil with a small scoop and sent back thousands of TV pictures, then fell silent.",
-        "In November 1969, Apollo 12 landed close enough for Pete Conrad and Alan Bean to walk over to it. They cut off about 10 kg of parts, including its TV camera, and brought them home so engineers could see what 31 months on the Moon does to a machine."
+        "Surveyor 3 landed in the Ocean of Storms on 20 April 1967 to test the ground before astronauts arrived. Its engine did not shut off in time, so it bounced twice before settling. It dug trenches with a small scoop and sent back 6,326 TV pictures. The last contact came on 4 May 1967, two days after the long lunar night began.",
+        "In November 1969, Apollo 12 landed about 180 m away, close enough for Pete Conrad and Alan Bean to walk over to it. They cut off about 10 kg of parts, including its TV camera, and brought them home so engineers could see what 31 months on the Moon does to a machine."
       ],
       voice: [
         "I waited two and a half years in silence.",
@@ -168,11 +187,11 @@
         "I’m missing a few parts now. They’re in a museum on Earth. I don’t mind."
       ],
       learned: [
-        "Its scoop showed the lunar soil was firm enough for crewed landers.",
+        "Its scoop showed the lunar soil was like wet sand: firm enough to hold an Apollo lunar module.",
         "The returned parts showed how dust, radiation and huge temperature swings affect hardware over time."
       ],
-      facts: [["Landed", "April 1967"], ["Visited by", "Apollo 12, Nov 1969"], ["Parts returned", "about 10 kg, incl. TV camera"], ["Position", "3.016° S, 23.418° W"]],
-      sources: [S.surveyorAlsj, S.surveyorSpace]
+      facts: [["Landed", "20 Apr 1967"], ["Last contact", "4 May 1967"], ["Visited by", "Apollo 12, Nov 1969"], ["Parts returned", "about 10 kg, incl. TV camera"]],
+      sources: [S.surveyor3Nasa, S.nssdcApollo12, S.surveyorAlsj, S.surveyorSpace, S.lroc]
     },
     {
       id: "alsep12",
@@ -185,7 +204,7 @@
       since: "1977-09-30", sinceLabel: "Switched off",
       hook: "A nuclear-powered station that listened to the Moon shake for almost eight years.",
       story: [
-        "Apollo 12 set up a science station with a seismometer, powered by a radioisotope generator. After the astronauts left, mission control steered their lunar module’s empty top half into the Moon on purpose, so the seismometer would record a crash of known size.",
+        "Apollo 12 set up a science station with a seismometer, powered by a radioisotope generator. After the astronauts left, mission control steered their lunar module’s empty top half into the Moon on purpose, so the seismometer would record a crash of known size. It struck about 60 km from the station and made the first recorded artificial moonquake.",
         "The Moon kept vibrating for almost an hour, and scientists said it rang like a bell. Apollo 14, 15, 16 and 17 left more stations. Together they recorded moonquakes until NASA switched the experiments off on 30 September 1977 to save money."
       ],
       voice: [
@@ -198,7 +217,7 @@
         "Seismic waves helped reveal the Moon’s layers: a crust, a mantle and a small core."
       ],
       facts: [["Set up", "19 Nov 1969"], ["Power", "Radioisotope generator"], ["Switched off", "30 Sep 1977"], ["Position", "3.010° S, 23.425° W"]],
-      sources: [S.alsep, S.popsciSmash, S.lroc]
+      sources: [S.nssdcApollo12, S.alsep, S.popsciSmash, S.lroc]
     },
     {
       id: "lrv15",
@@ -223,8 +242,8 @@
         "Rovers let astronauts explore many kilometres from their lander.",
         "The crew found the “Genesis Rock”, a piece of the Moon’s ancient crust."
       ],
-      facts: [["First drive", "31 Jul 1971"], ["Drivers", "Dave Scott, Jim Irwin"], ["Power", "Batteries"], ["Position", "26.132° N, 3.638° E"]],
-      sources: [S.lrocTracks15, S.utLiftoff, S.lroc]
+      facts: [["First drive", "31 Jul 1971"], ["Drivers", "Dave Scott, Jim Irwin"], ["Distance driven", "27.9 km"], ["Position", "26.132° N, 3.638° E"]],
+      sources: [S.nssdcApollo15, S.lrocTracks15, S.utLiftoff, S.lroc]
     },
     {
       id: "lrv16",
@@ -423,19 +442,19 @@
       hook: "NASA’s first Mars lander touched down seven years to the day after Apollo 11, and worked for more than six years.",
       story: [
         "Viking 1 landed on 20 July 1976 on a plain called Chryse Planitia. It sent back the first clear pictures from the surface of Mars, reported the weather every day and scooped up soil to test it for signs of life.",
-        "The life-detection results were puzzling and scientists still debate them. Viking 1 kept working until November 1982, when contact was lost after a command meant to fix its batteries accidentally pointed its antenna away from Earth."
+        "The life-detection results were puzzling and scientists still debate them. Viking 1 kept working until 11 November 1982, when a faulty command sent from Earth cut off communications. Every attempt to regain contact failed."
       ],
       voice: [
         "20 July 1976. Seven years to the day after people first walked on the Moon, I opened my eyes on Mars.",
         "I tasted the soil for signs of life. The answers were… complicated.",
-        "I was still working in 1982 when a wrong command turned my antenna away from home."
+        "I was still working in 1982 when a wrong command from home cut the line."
       ],
       learned: [
         "The surface of Mars is dry, cold and blasted by ultraviolet light, tough conditions for life.",
         "Its weather station gave the first long record of Martian seasons measured from the ground."
       ],
-      facts: [["Landed", "20 Jul 1976"], ["Planned mission", "90 days"], ["Last signal", "Nov 1982"], ["Position", "22.27° N, 47.95° W"]],
-      sources: [S.vikingLander, S.viking1Gsfc, S.viking1Hirise, S.viking1Wiki]
+      facts: [["Landed", "20 Jul 1976"], ["Planned mission", "90 days"], ["Last signal", "11 Nov 1982"], ["Position", "22.27° N, 47.95° W"]],
+      sources: [S.viking1Nasa, S.vikingLander, S.viking1Gsfc, S.viking1Hirise]
     },
     {
       id: "viking2",
@@ -461,7 +480,7 @@
         "Soil at the two Viking sites, thousands of kilometres apart, turned out to be remarkably similar."
       ],
       facts: [["Landed", "3 Sep 1976"], ["Region", "Utopia Planitia"], ["Last signal", "Apr 1980"], ["Position", "48.27° N, 134.01° E"]],
-      sources: [S.viking2Nasa, S.vikingLander]
+      sources: [S.viking2Nasa, S.vikingLander, S.viking1Nasa]
     },
     {
       id: "sojourner",
@@ -512,7 +531,7 @@
         "Gusev crater once had hot water or steam, the kind of place where microbes thrive on Earth."
       ],
       facts: [["Landed", "4 Jan 2004"], ["Planned", "about 90 sols"], ["Distance", "about 7.7 km"], ["Last signal", "22 Mar 2010"]],
-      sources: [S.spiritNasa, S.spiritPS, S.spiritASU]
+      sources: [S.merNasa, S.spiritNasa, S.spiritPS, S.spiritASU]
     },
     {
       id: "opportunity",
@@ -526,7 +545,7 @@
       hook: "Built for 90 Martian days, it worked for more than 14 years and drove farther than a marathon.",
       story: [
         "Opportunity landed on 25 January 2004 on Meridiani Planum. Within weeks it found tiny round pebbles of the mineral hematite, nicknamed “blueberries”: evidence that water once soaked these rocks.",
-        "It drove about 45 km in all, and in 2014 it broke the record for the longest drive on another world. In June 2018 a planet-wide dust storm blotted out the Sun. Its final data, sent on 10 June 2018 (sol 5,111), showed low power and a darkening sky, which people later summed up as “My battery is low and it’s getting dark.” NASA sent more than 1,000 commands trying to wake it, then declared the mission over on 13 February 2019."
+        "It drove 45.16 km in all. In 2014 it broke the record for the longest drive on another world, and it kept that record until 11 October 2026, when Perseverance passed its mark. In June 2018 a planet-wide dust storm blotted out the Sun. Its final data, sent on 10 June 2018 (sol 5,111), showed low power and a darkening sky, which people later summed up as “My battery is low and it’s getting dark.” NASA sent more than 1,000 commands trying to wake it, then declared the mission over on 13 February 2019."
       ],
       voice: [
         "90 sols. That’s what they planned for me.",
@@ -537,8 +556,8 @@
         "Meridiani Planum was once wet: water soaked its rocks long ago.",
         "Careful driving and lucky gusts of wind that cleaned dust off its panels let a 90-day rover last 14 years."
       ],
-      facts: [["Landed", "25 Jan 2004"], ["Planned", "about 90 sols"], ["Distance", "about 45 km"], ["Last signal", "10 Jun 2018 · sol 5,111"]],
-      sources: [S.oppLast, S.oppPS, S.psRecord, S.oppNasa]
+      facts: [["Landed", "25 Jan 2004"], ["Planned", "about 90 sols"], ["Distance", "45.16 km (28.06 miles)"], ["Last signal", "10 Jun 2018 · sol 5,111"]],
+      sources: [S.merNasa, S.oppLast, S.oppPS, S.psRecord, S.oppNasa]
     },
     {
       id: "phoenix",
@@ -561,10 +580,11 @@
       ],
       learned: [
         "Water ice lies just below the surface in Mars’s far north.",
-        "The soil contains salts called perchlorates, which matter for Martian chemistry and for future explorers."
+        "The soil contains salts called perchlorates, which matter for Martian chemistry and for future explorers.",
+        "Its design proved itself: ten years later the InSight lander was built on the same plan."
       ],
       facts: [["Landed", "25 May 2008"], ["Region", "near the north pole"], ["Last signal", "2 Nov 2008"], ["Position", "68.22° N, 125.75° W"]],
-      sources: [S.phoenixJPL, S.phoenixNasa]
+      sources: [S.phoenixJPL, S.phoenixNasa, S.insightNasa]
     },
     {
       id: "insight",
@@ -702,7 +722,8 @@
       hook: "It left sealed rock samples on the ground: hardware left behind on purpose.",
       story: [
         "Perseverance landed in Jezero crater on 18 February 2021, near an ancient river delta, carrying Ingenuity under its belly.",
-        "It drills rock cores and seals them in tubes. Ten tubes were set down on the surface at a spot called Three Forks, a backup sample depot waiting for a future mission."
+        "It drills rock cores and seals them in tubes. Ten tubes were set down on the surface at a spot called Three Forks, a backup sample depot waiting for a future mission.",
+        "On 11 October 2026 it passed Opportunity’s 45.16 km to become the machine that has driven farthest on another world. It is still going."
       ],
       voice: [
         "I left ten sealed tubes on the ground at a place called Three Forks.",
@@ -711,8 +732,8 @@
       learned: [
         "Jezero crater once held a lake fed by a river, a good place to look for signs of ancient life."
       ],
-      facts: [["Landed", "18 Feb 2021"], ["Region", "Jezero crater"], ["Sample depot", "10 tubes at Three Forks"], ["Status", "Exploring"]],
-      sources: [S.perseveranceNasa]
+      facts: [["Landed", "18 Feb 2021"], ["Region", "Jezero crater"], ["Sample depot", "10 tubes at Three Forks"], ["Driving record", "since 11 Oct 2026"]],
+      sources: [S.perseveranceNasa, S.merNasa]
     },
 
     /* ======================= DEEP SPACE ======================= */
@@ -727,7 +748,7 @@
       hook: "The first spacecraft to cross the asteroid belt and fly past Jupiter.",
       story: [
         "Pioneer 10 launched on 2 March 1972. It was the first spacecraft to travel through the asteroid belt and, in December 1973, the first to fly past Jupiter.",
-        "Its signal grew weaker as its power source faded, and the last faint signal arrived on 23 January 2003. It carries a gold-anodized plaque, designed by Carl Sagan and Frank Drake, showing two humans and a map of where Earth is."
+        "Its signal grew weaker as its power source faded, and the last faint signal arrived on 23 January 2003, after an 11-hour-20-minute trip from 12.23 billion km away. It carries a gold-anodized plaque, designed by Carl Sagan and Frank Drake, showing two humans and a map of where Earth is."
       ],
       voice: [
         "I was the first to fly through the asteroid belt. Nobody knew if I’d make it.",
@@ -739,7 +760,7 @@
         "Jupiter’s radiation belts are fierce, which later missions like Voyager needed to know."
       ],
       facts: [["Launched", "2 Mar 1972"], ["Jupiter flyby", "Dec 1973"], ["Last signal", "23 Jan 2003"], ["Carries", "The Pioneer plaque"]],
-      sources: [S.pioneer10Things, S.pioneerPlaque]
+      sources: [S.pioneer10Nasa, S.pioneer10Things, S.pioneerPlaque]
     },
     {
       id: "pioneer11",
@@ -763,7 +784,7 @@
         "It gave humanity the first close-up look at Saturn and its rings."
       ],
       facts: [["Launched", "Apr 1973"], ["Saturn flyby", "Sep 1979"], ["Last contact", "30 Sep 1995"], ["Heading", "Toward Aquila"]],
-      sources: [S.pioneer11Things, S.pioneerPlaque]
+      sources: [S.pioneer11Things, S.pioneerPlaque, S.pioneer10Nasa]
     },
     {
       id: "voyager1",
@@ -836,7 +857,104 @@
       ],
       facts: [["Launched", "19 Jan 2006"], ["Pluto flyby", "14 Jul 2015"], ["Arrokoth flyby", "1 Jan 2019"], ["Woke from hibernation", "23 Jun 2026"]],
       sources: [S.nhWake, S.nhNasa, S.nhTombaugh]
+    },
+    {
+      id: "near",
+      name: "NEAR Shoemaker",
+      mission: "Near Earth Asteroid Rendezvous",
+      agency: "NASA",
+      world: "deep", kind: "lander", status: "silent", year: 2001,
+      place: "On asteroid 433 Eros",
+      at: "eros",
+      since: "2001-02-28", sinceLabel: "Last contact",
+      hook: "It was never built to land. It touched down on an asteroid anyway, and kept working for two more weeks.",
+      story: [
+        "NEAR was the first spacecraft to orbit an asteroid. It reached Eros, a rock about 34 km long, on 14 February 2000, a year later than planned because an engine burn had been aborted. While it circled, NASA renamed it NEAR Shoemaker in honour of the geologist Eugene Shoemaker.",
+        "At the end of its mission the team tried something it was not designed for. On 12 February 2001 it drifted down, taking 69 close-up photos on the way, and touched the surface at about 6 km/h. It survived. For about two weeks it sent measurements from the ground, until the cold (about −173 °C) silenced it on 28 February 2001. A final call in December 2002 went unanswered."
+      ],
+      voice: [
+        "I have no legs and no landing gear. I landed anyway, at walking pace.",
+        "For two more weeks I measured the ground I was sitting on.",
+        "Then the cold came. I am still here, riding this rock around the Sun."
+      ],
+      learned: [
+        "Eros is a solid, cratered rock about as dense as Earth’s crust, with no magnetic field.",
+        "The mission sent back about 160,000 images, roughly ten times more data than planned."
+      ],
+      facts: [["Launched", "17 Feb 1996"], ["Orbited Eros", "from 14 Feb 2000"], ["Touchdown", "12 Feb 2001, at about 6 km/h"], ["Last contact", "28 Feb 2001"]],
+      sources: [S.nearNasa, S.erosNasa]
+    },
+    {
+      id: "dawn",
+      name: "Dawn",
+      mission: "Dawn · Vesta and Ceres",
+      agency: "NASA",
+      world: "deep", kind: "orbiter", status: "silent", year: 2007,
+      place: "In orbit around the dwarf planet Ceres",
+      at: "ceres",
+      since: "2018-10-31", sinceLabel: "Fell silent",
+      hook: "It ran out of fuel in 2018 and still circles a dwarf planet, with nobody at the controls.",
+      story: [
+        "Dawn flew on ion engines, which push gently but can keep pushing for years. That let it do something no spacecraft had done before: orbit one distant world, leave, and then orbit a second. It studied the giant asteroid Vesta from July 2011 to September 2012, then reached the dwarf planet Ceres on 6 March 2015.",
+        "In its final months it swooped to within about 35 km of Ceres every 27 hours. On 31 October 2018 it ran out of hydrazine, the fuel that kept its antenna pointed at Earth, and went silent. It was left in orbit on purpose. Ceres has water and the kind of chemistry that interests scientists who study how life begins, so NASA chose an orbit that should keep Dawn off the surface for at least 20 years."
+      ],
+      voice: [
+        "My engines pushed gently, but they could push for years.",
+        "I visited two worlds and stayed at both. Nobody had done that before.",
+        "My fuel is gone and I cannot turn toward Earth. I am still circling Ceres."
+      ],
+      learned: [
+        "Dwarf planets like Ceres could have had oceans for much of their history, and might still hold some water today.",
+        "Vesta and Ceres grew up very differently, which shows how much location mattered when the solar system was young."
+      ],
+      facts: [["Launched", "27 Sep 2007"], ["At Vesta", "Jul 2011 – Sep 2012"], ["Reached Ceres", "6 Mar 2015"], ["Distance flown", "about 6.9 billion km"]],
+      sources: [S.dawnNasa, S.dawnEnd, S.dawnNssdc, S.ceresFacts]
+    },
+    {
+      id: "kepler",
+      name: "Kepler space telescope",
+      mission: "Kepler / K2",
+      agency: "NASA",
+      world: "deep", kind: "telescope", status: "silent", year: 2009,
+      place: "Circling the Sun, trailing behind Earth",
+      since: "2018-11-15", sinceLabel: "Switched off",
+      hook: "It found more than 2,600 planets around other stars. Then it ran out of fuel, and its team said goodnight.",
+      story: [
+        "Kepler stared at about 150,000 stars in one patch of sky, watching for the tiny dip in brightness when a planet crosses in front of its star. In 2013 the second of its four reaction wheels failed and it could no longer hold steady. Engineers found a fix: they balanced the telescope against the pressure of sunlight, and the mission carried on for years under a new name, K2.",
+        "On 30 October 2018 NASA announced that Kepler had run out of fuel. On 15 November its team sent a last set of “goodnight” commands that switched off its transmitters. By coincidence, that was the anniversary of the death of the astronomer Johannes Kepler in 1630. The telescope now drifts in its own orbit around the Sun, far from Earth."
+      ],
+      voice: [
+        "I never looked at Earth. I watched 150,000 other suns, waiting for one to blink.",
+        "When my wheels failed, I learned to balance on sunlight.",
+        "The last word from home was “goodnight”. I follow Earth around the Sun, a little farther behind each year."
+      ],
+      learned: [
+        "Our galaxy holds more planets than stars.",
+        "The most common size of planet Kepler found, between Earth and Neptune, does not exist in our own solar system."
+      ],
+      facts: [["Launched", "6 Mar 2009"], ["Planets found", "more than 2,600"], ["Stars surveyed", "more than 500,000"], ["“Goodnight” sent", "15 Nov 2018"]],
+      sources: [S.keplerNasa, S.keplerEnd, S.keplerGoodnight, S.keplerNssdc]
     }
+  ];
+
+  /* ---------- Official challenge resources --------------------------------
+     The NASA links listed on the challenge page, and the machines here that
+     cite each one. Sources flagged o: 1 show a "Challenge resource" badge. */
+  LKP.resources = [
+    { group: "The Moon", name: "Apollo Lunar Modules", src: S.nssdcApollo11, ghosts: ["eagle", "lrrr11"] },
+    { group: "The Moon", name: "Lunar Roving Vehicles", src: S.nssdcApollo15, ghosts: ["lrv15"] },
+    { group: "The Moon", name: "ALSEP scientific packages", src: S.nssdcApollo12, ghosts: ["alsep12", "surveyor3"] },
+    { group: "The Moon", name: "Surveyor landers", src: S.surveyor3Nasa, ghosts: ["surveyor3"] },
+    { group: "Mars", name: "Sojourner rover", src: S.pathfinderNasa, ghosts: ["sojourner"] },
+    { group: "Mars", name: "Spirit & Opportunity", src: S.merNasa, ghosts: ["spirit", "opportunity", "perseverance"] },
+    { group: "Mars", name: "Viking 1 & 2 landers", src: S.viking1Nasa, ghosts: ["viking1", "viking2"] },
+    { group: "Mars", name: "Phoenix & InSight landers", src: S.insightNasa, ghosts: ["insight", "phoenix"] },
+    { group: "Mars", name: "Ingenuity helicopter", src: S.ingenuityNasa, ghosts: ["ingenuity"] },
+    { group: "Beyond", name: "Dawn spacecraft", src: S.dawnNasa, ghosts: ["dawn"] },
+    { group: "Beyond", name: "NEAR Shoemaker", src: S.nearNasa, ghosts: ["near"] },
+    { group: "Beyond", name: "Pioneer 10 & 11", src: S.pioneer10Nasa, ghosts: ["pioneer10", "pioneer11"] },
+    { group: "Beyond", name: "Kepler space telescope", src: S.keplerNasa, ghosts: ["kepler"] },
+    { group: "Catalog", name: "NSSDCA master catalog", src: S.nssdc, ghosts: ["dawn", "kepler"] }
   ];
 
   /* ---------- Light Clock destinations ---------------------------------- */
@@ -874,8 +992,25 @@
     { id: "neptune", name: "Neptune", type: "Planet", diameterKm: 49528, color: "#6f8dff", visitedBy: ["voyager2"],
       fact: "The most distant planet. Only Voyager 2 has ever visited, in 1989." },
     { id: "pluto", name: "Pluto", type: "Dwarf planet", diameterKm: 2376, color: "#d9bfa3", visitedBy: ["newhorizons"],
-      fact: "A dwarf planet in the Kuiper Belt. New Horizons flew past in 2015 and found a giant heart-shaped plain." }
+      fact: "A dwarf planet in the Kuiper Belt. New Horizons flew past in 2015 and found a giant heart-shaped plain." },
+    { id: "eros", name: "Eros", type: "Near-Earth asteroid", diameterKm: 34, sizeLabel: "about 34 km long", color: "#c9ab8b", home: ["near"], homeLabel: "Still resting here",
+      fact: "The first near-Earth asteroid ever found, in 1898, and the first asteroid a spacecraft orbited and landed on. Its shape here is a sketch, not a measured model." },
+    { id: "ceres", name: "Ceres", type: "Dwarf planet", diameterKm: 952, color: "#b9b4ab", home: ["dawn"], homeLabel: "Still in orbit here",
+      fact: "The largest object in the asteroid belt and the only dwarf planet in the inner solar system. It could be as much as 25 percent water." }
   ];
+
+  /* ---------- Simulator: small worlds and a telescope on closed orbits -----
+     Osculating heliocentric ecliptic elements from NASA JPL Horizons at the
+     epoch below (2026-Nov-10 00:00 TDB): a (au), e, i, node, peri (argument
+     of perihelion), M (mean anomaly) in degrees, n in degrees per day.
+     Moved forward and back as simple two-body orbits. Checked against
+     Horizons for 2000-2040: within 1.4 degrees and 0.35% in distance. */
+  LKP.smallOrbits = {
+    epochJD: 2461354.5,
+    ceres: { a: 2.766298040182, e: 0.079822071885, i: 10.586865742683, node: 80.248550794486, peri: 73.130495837214, M: 307.58621958977, n: 0.214217832297 },
+    eros: { a: 1.458276549927, e: 0.222847331198, i: 10.828609167406, node: 304.267834808744, peri: 178.925705541788, M: 148.698857885191, n: 0.559685732145 },
+    kepler: { a: 1.013115835458, e: 0.036087804182, i: 0.448323297512, node: 154.112347170608, peri: 294.154088133103, M: 197.697214338760, n: 0.966530177755 }
+  };
 
   /* ---------- Simulator: spacecraft leaving the solar system -------------
      Heliocentric ecliptic position (au) and velocity (au/day) from NASA JPL
@@ -889,7 +1024,9 @@
     voyager2: { p: [39.98737875, -105.680126, -89.96474532], v: [0.00242765675, -0.0053944081, -0.00653564089], validFrom: "1990", tracked: true },
     pioneer10: { p: [24.09941163, 139.94905257, 7.40635193], v: [0.000708654264, 0.00679721895, 0.000348250148], validFrom: "1974", tracked: false },
     pioneer11: { p: [29.18027868, -111.00170489, 28.2853796], v: [0.00233175601, -0.0058304261, 0.00140403375], validFrom: "1980", tracked: false },
-    newhorizons: { p: [20.96977635, -62.56433357, 2.30187285], v: [0.00306476617, -0.00721097507, 0.000283778716], validFrom: "2016", tracked: true }
+    newhorizons: { p: [20.96977635, -62.56433357, 2.30187285], v: [0.00306476617, -0.00721097507, 0.000283778716], validFrom: "2016", tracked: true },
+    /* Kepler circles the Sun on a closed orbit (see LKP.smallOrbits) instead of flying a straight line. */
+    kepler: { orbit: true, validFrom: "2010", tracked: false }
   };
 
   /* ---------- Hero telemetry ticker -------------------------------------- */
@@ -899,12 +1036,15 @@
     "VOYAGER 1 · INTERSTELLAR SPACE · STILL TRANSMITTING",
     "INGENUITY · VALINOR HILLS · FINAL DATA 16 APR 2024",
     "PIONEER 10 · BEYOND THE PLANETS · LAST SIGNAL 23 JAN 2003",
-    "LUNAR ROVER 3 · TAURUS–LITTROW · PARKED 14 DEC 1972"
+    "LUNAR ROVER 3 · TAURUS–LITTROW · PARKED 14 DEC 1972",
+    "KEPLER TELESCOPE · SOLAR ORBIT · GOODNIGHT 15 NOV 2018",
+    "NEAR SHOEMAKER · ASTEROID EROS · LAST CONTACT 28 FEB 2001",
+    "DAWN · IN ORBIT AT CERES · SILENT SINCE 31 OCT 2018"
   ];
 
   /* ---------- Timeline ---------------------------------------------------- */
   LKP.timeline = [
-    { date: "1967-04", title: "Surveyor 3 lands", text: "A robot scout tests the ground in the Ocean of Storms.", ghost: "surveyor3" },
+    { date: "1967-04-20", title: "Surveyor 3 lands", text: "A robot scout bounces twice, then tests the ground in the Ocean of Storms.", ghost: "surveyor3" },
     { date: "1969-07-20", title: "Apollo 11 lands", text: "Eagle touches down. The laser mirror is set out the next day.", ghost: "eagle" },
     { date: "1969-11-19", title: "A visit to Surveyor 3", text: "Apollo 12 astronauts walk to the old robot and take its camera.", ghost: "surveyor3" },
     { date: "1970-11-17", title: "Lunokhod 1 starts driving", text: "The first robot rover on another world, driven from Earth.", ghost: "lunokhod1" },
@@ -923,21 +1063,27 @@
     { date: "1999-07-31", title: "Lunar Prospector’s last dive", text: "A planned crash near the Moon’s south pole.", ghost: "prospector" },
     { date: "1999-09-23", title: "Mars Climate Orbiter lost", text: "Pounds versus newtons.", ghost: "climateorbiter" },
     { date: "1999-12-03", title: "Mars Polar Lander lost", text: "Silence after landing.", ghost: "polarlander" },
+    { date: "2001-02-12", title: "First landing on an asteroid", text: "NEAR Shoemaker settles onto Eros at walking pace.", ghost: "near" },
     { date: "2003-01-23", title: "Pioneer 10’s last signal", text: "Its power source finally fades.", ghost: "pioneer10" },
     { date: "2004-01-25", title: "Opportunity lands", text: "Three weeks after its twin, Spirit.", ghost: "opportunity" },
     { date: "2008-05-25", title: "Phoenix lands in the arctic", text: "It will find ice just below the dirt.", ghost: "phoenix" },
+    { date: "2009-03-06", title: "Kepler launches", text: "It will watch 150,000 stars for the shadow of a planet.", ghost: "kepler" },
     { date: "2009-10-09", title: "LCROSS finds water", text: "A rocket stage hits Cabeus crater.", ghost: "lcross" },
     { date: "2010-03-22", title: "Spirit’s last signal", text: "Stuck in sand, it falls asleep for good.", ghost: "spirit" },
     { date: "2010-04", title: "Lunokhod 1 found", text: "NASA’s LRO spots it. Lasers get an echo.", ghost: "lunokhod1" },
     { date: "2012-08-25", title: "Voyager 1 goes interstellar", text: "The first spacecraft to leave the Sun’s bubble.", ghost: "voyager1" },
     { date: "2014-07-27", title: "A new driving record", text: "Opportunity passes Lunokhod 2’s 39 km.", ghost: "opportunity" },
+    { date: "2015-03-06", title: "Dawn reaches Ceres", text: "The first spacecraft to orbit two worlds beyond Earth.", ghost: "dawn" },
     { date: "2015-07-14", title: "Hello, Pluto", text: "New Horizons flies past.", ghost: "newhorizons" },
     { date: "2018-06-10", title: "Opportunity’s last signal", text: "A planet-wide dust storm blocks the Sun.", ghost: "opportunity" },
+    { date: "2018-10-31", title: "Dawn runs out of fuel", text: "It falls silent, still in orbit around Ceres.", ghost: "dawn" },
     { date: "2018-11-05", title: "Voyager 2 goes interstellar", text: "Six years after its twin.", ghost: "voyager2" },
+    { date: "2018-11-15", title: "Goodnight, Kepler", text: "The final command switches off its transmitters.", ghost: "kepler" },
     { date: "2021-04-19", title: "First flight on another planet", text: "Ingenuity hovers over Jezero crater.", ghost: "ingenuity" },
     { date: "2022-12-21", title: "InSight’s mission ends", text: "More than 1,300 marsquakes recorded.", ghost: "insight" },
     { date: "2024-01-18", title: "Ingenuity’s 72nd flight", text: "Its last. The rotor blades are damaged.", ghost: "ingenuity" },
     { date: "2026-06-23", title: "New Horizons wakes up", text: "After its longest hibernation yet.", ghost: "newhorizons" },
+    { date: "2026-10-11", title: "The record falls again", text: "Perseverance passes Opportunity’s 45.16 km.", ghost: "perseverance" },
     { date: "2026-11", title: "One light-day", text: "Voyager 1 is expected to reach 24 light-hours from Earth.", ghost: "voyager1" }
   ];
 
@@ -998,6 +1144,20 @@
       answer: 1,
       explain: "Its marsquake recordings revealed the thickness of Mars’s crust and the size of its core.",
       ghost: "insight"
+    },
+    {
+      q: "NEAR Shoemaker was built only to orbit the asteroid Eros. What did it do at the end of its mission?",
+      options: ["Flew on to Jupiter", "Landed on the asteroid and kept working", "Returned to Earth", "Crashed into the Moon"],
+      answer: 1,
+      explain: "On 12 February 2001 it touched down at about 6 km/h, the first landing on an asteroid, and sent data for about two more weeks.",
+      ghost: "near"
+    },
+    {
+      q: "The Kepler space telescope ran out of fuel in 2018. What were its final commands from Earth called?",
+      options: ["Goodnight", "Farewell", "Sleep mode", "Lights out"],
+      answer: 0,
+      explain: "The “goodnight” commands were sent on 15 November 2018, the anniversary of the death of the astronomer Johannes Kepler in 1630.",
+      ghost: "kepler"
     }
   ];
 })();

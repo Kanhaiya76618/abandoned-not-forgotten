@@ -292,6 +292,36 @@
       "credit": "NASA",
       "license": "Public domain",
       "page": "https://commons.wikimedia.org/wiki/File:New_Horizons_1.jpg"
+    },
+    "near": {
+      "src": "assets/ghosts/near.jpg",
+      "thumb": "assets/ghosts/near_t.jpg",
+      "w": 1000,
+      "h": 818,
+      "caption": "The saddle-shaped dip called Himeros on the asteroid Eros, photographed by NEAR Shoemaker. The spacecraft touched down just south of it.",
+      "credit": "NASA (NEAR Shoemaker)",
+      "license": "Public domain",
+      "page": "https://commons.wikimedia.org/wiki/File:The_South_Saddle_NEAR_Shoemaker_Eros.jpg"
+    },
+    "dawn": {
+      "src": "assets/ghosts/dawn.jpg",
+      "thumb": "assets/ghosts/dawn_t.jpg",
+      "w": 1000,
+      "h": 563,
+      "caption": "Artist’s illustration of Dawn firing its ion engine above Ceres. No camera was there to photograph it.",
+      "credit": "NASA/JPL-Caltech/UCLA/MPS/DLR/IDA",
+      "license": "Public domain",
+      "page": "https://commons.wikimedia.org/wiki/File:Artist_concept_of_Dawn_arriving_at_Ceres_(PIA20919).jpg"
+    },
+    "kepler": {
+      "src": "assets/ghosts/kepler.jpg",
+      "thumb": "assets/ghosts/kepler_t.jpg",
+      "w": 898,
+      "h": 1000,
+      "caption": "The Kepler space telescope being prepared for launch in Florida, 2009.",
+      "credit": "NASA / Troy Cryder",
+      "license": "Public domain",
+      "page": "https://commons.wikimedia.org/wiki/File:Kepler_in_Astrotech%27s_Hazardous_Processing_Facility_(KSC-2009-1645).jpg"
     }
   };
 })();

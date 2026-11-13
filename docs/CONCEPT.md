@@ -10,7 +10,7 @@
 
 | The challenge says | Our answer |
 |---|---|
-| Tell the story of hardware left on the Moon, on Mars and in deep space | 29 artifacts across three chapters: **the Moon** (12), **Mars** (12, including the two rovers still working there) and **deep space** (5) |
+| Tell the story of hardware left on the Moon, on Mars and in deep space | 32 artifacts across three chapters: **the Moon** (12), **Mars** (12, including the two rovers still working there) and **deep space** (8: five leaving the solar system, plus Dawn at Ceres, NEAR Shoemaker on Eros and the Kepler telescope) |
 | Introduce school-age space fans to the hardware **and the science it made possible** | Every dossier has three parts: *The story* (what happened), *What we learned* (the science) and *In its own words* (emotion) |
 | Translate complex data into an engaging narrative | We frame everything around one idea, the **last known position**: where it is, the last time it spoke, and what it found |
 | Show how missions operated rather than listing facts | Light-delay calculator, a live Mars distance computed from orbital elements, the silence board, and the stories of rescue attempts (Spirit), wake-up calls (Opportunity) and a remote-controlled camera (Apollo 17) |
@@ -55,20 +55,22 @@ Space Apps judges use five criteria (from the official Judging & Awards Guide): 
 
 ## 4. The experience (site walkthrough)
 
-1. **Hero: "Last Known Position".** A radar-style display shows the light-delay rings (Moon 1.3 light-seconds, Mars light-minutes, Voyager 1 about a light-day), with a telemetry ticker of last signals.
+The site is organised as **tabs**: Simulator (home), Moon, Mars, Deep space, Silence board, Timeline, Quiz and About. Each tab is one focused page, and the sky changes colour with it (cool blue for the Moon, rust for Mars, violet for deep space). The list below is the order a first-time visitor usually follows.
+
+1. **Home: "Last Known Position".** A compact title and a telemetry ticker of last signals, with the live simulator straight below it.
 2. **Prologue: "Nothing gets tidied up out there".** No wind or rain on the Moon. Four sourced stats.
-3. **Live simulator: "Fly through the solar system".** Real positions for today (or any date from 1960 to 2050), time controls, and an "Easy view / True distances" switch. Fly to the Moon or Mars for a detailed globe with photo pins. Fly to Voyager 1 and look back at how far it has gone.
+3. **Live simulator: "Fly through the solar system".** Real positions for today (or any date from 1960 to 2050), time controls, and an "Easy view / True distances" switch. Fly to the Moon or Mars for a detailed globe with photo pins. Fly to Voyager 1 and look back at how far it has gone. Ceres (with Dawn still in orbit), the asteroid Eros (with NEAR Shoemaker on it) and the Kepler telescope are there too, on real orbits.
 4. **Chapter 1, the Moon: "A museum with no visitors".** Real lunar map, 12 artifacts, story moments (the only robot humans ever walked up to; the last car on the Moon filmed its drivers leaving).
 5. **Chapter 2, Mars: "The ghost rovers".** Real Mars map, 12 artifacts including two lost ones and two still working.
-6. **Chapter 3, deep space: "Messages in a bottle".** Pioneer plaques, the Golden Record, a log-scale signal gauge and the **Light Clock**: type a message, pick a destination, and see when it arrives. Mars's distance is computed live.
+6. **Chapter 3, deep space: "Messages in a bottle".** Pioneer plaques, the Golden Record, three machines parked in odd places (Dawn, NEAR Shoemaker, Kepler), a log-scale signal gauge and the **Light Clock**: type a message, pick a destination, and see when it arrives. Mars's distance is computed live.
 7. **Chapter 4: "The silence board".** Every artifact's status (working, silent, lost, impact) with live counters since its last signal.
 8. **Timeline:** "Sixty years of leaving things behind" (1967–2026).
-9. **Quiz:** "Are you a ghost hunter?" Eight questions, each with an explanation and a source.
-10. **Epilogue:** "What will we leave next?" Teacher activities, sources and credits.
+9. **Quiz:** "Are you a ghost hunter?" Ten questions, each with an explanation and a source.
+10. **Epilogue:** "What will we leave next?" Teacher activities, a map of NASA's official challenge resources to the machines that use them, sources and credits.
 
-Every artifact opens a **dossier** with a real NASA photo, key facts, the story, the imagined log, what we learned, and sources, plus *Listen*, *Show on map*, *See in 3D* and *Previous/Next*. A **search** box (press `/`) finds any machine or world.
+Clicking a pin on the Moon or Mars turns the globe to face it and slides the full story in from the right, with the globe still visible beside it. Every artifact opens the same **story panel** with a real NASA photo, how long it has been silent, key facts, the story, the imagined log, what we learned, and sources, plus *Listen*, *Show on map*, *See in 3D* and *Previous/Next*. A **search** box (press `/`) finds any machine or world.
 
-**Look and feel:** frosted-glass panels over a soft aurora sky, with puffy clay buttons and photo frames. It is friendly for kids and still reads as a serious archive.
+**Look and feel:** frosted-glass panels over a deep night sky (a faint Milky Way band, drifting stars, the odd meteor), with puffy clay buttons and photo frames. It is friendly for kids and still reads as a serious archive.
 
 ## 5. Story design
 
@@ -82,8 +84,8 @@ Every artifact opens a **dossier** with a real NASA photo, key facts, the story,
 1. Every number and date in a dossier comes from a linked source, NASA or JPL wherever possible.
 2. Coordinates: Moon sites from LROC's *Coordinates of Lunar Anthropogenic Features* (2016). Mars sites from published landing coordinates (approximate where noted).
 3. Imagined logs are labeled *"Imagined log, written from real mission facts"* every time.
-4. Where sources disagree (Viking 1's last contact is given as 11 or 13 November 1982), we use the NASA value and note the uncertainty.
-5. Facts were checked on **9 November 2026**, and the site shows that date.
+4. Where sources disagree, we use the value on NASA's mission page. Examples: Viking 1's last contact (11 or 13 November 1982; we use 11), and NEAR Shoemaker's last contact (28 February or 1 March 2001; we use 28 February).
+5. Facts were checked on **9 November 2026** and again, against the official challenge resources, on **13 November 2026**. The site shows both dates.
 
 ## 7. NASA data and resources used
 
@@ -91,16 +93,18 @@ Every artifact opens a **dossier** with a real NASA photo, key facts, the story,
 - LROC / Arizona State University: *Coordinates of Lunar Anthropogenic Features* (2016)
 - NASA / JPL mission pages for every artifact (linked in each dossier)
 - JPL *Approximate Positions of the Planets* (Keplerian elements) for every planet's position in the simulator and the live Earth–Mars distance
-- JPL Horizons trajectories for Voyager 1 and 2, Pioneer 10 and 11, and New Horizons
+- JPL Horizons trajectories for Voyager 1 and 2, Pioneer 10 and 11, and New Horizons, and Horizons orbital elements for Ceres, Eros and the Kepler telescope
 - NASA SVS *CGI Moon Kit* (LRO color map and elevation) for the 3D Moon
-- 29 public-domain NASA photographs, one per machine (credits in `site/assets/CREDITS.md`)
+- 32 public-domain NASA images, one per machine (credits in `site/assets/CREDITS.md`), and a map of Ceres from the Dawn mission
 - Non-NASA: planet textures other than the Moon and Mars are from Solar System Scope (CC BY 4.0, credited on the site)
-- **Add when the official challenge resources are released** (see section 10)
+- **The official challenge resources (all fourteen are used; see section 10):**
+  - NSSDCA master catalog, and its entries for the Apollo 11, 12 and 15 lunar modules (descent stages, EASEP/ALSEP packages, the first rover), Dawn and Kepler
+  - NASA Science mission pages: Surveyor 3, Mars Pathfinder (Sojourner), Mars Exploration Rovers (Spirit and Opportunity), Viking 1, InSight, Ingenuity, Dawn, NEAR Shoemaker, Pioneer 10, Kepler
 
 ## 8. Demo video script (about 2 minutes; a 30-second cut is marked ★)
 
 1. ★ Black screen, one line types out: *"My battery is low and it's getting dark."* Narrator: "That's how people remember the last message from a robot on Mars."
-2. ★ Hero radar appears. "Since 1967 we've left machines on the Moon, on Mars and between the stars. This is where they are."
+2. ★ The home screen appears, with the solar system turning. "Since 1967 we've left machines on the Moon, on Mars and between the stars. This is where they are."
 3. Simulator: click **Moon**. The camera flies in and pins appear. Hover Tranquility Base to show the Apollo 11 photo, then open *Apollo 11's laser mirror*: "Still working. Scientists bounce lasers off it today."
 4. Open *Surveyor 3*: "The only robot humans have ever walked up to on another world."
 5. ★ Click **Mars**, open *Opportunity*, press **Listen**. The machine voice reads its log.
@@ -118,12 +122,15 @@ Every artifact opens a **dossier** with a real NASA photo, key facts, the story,
 - [ ] Test on a phone and on a classroom projector (Day mode)
 - [ ] Credit imagery: NASA/GSFC/ASU (LRO) and NASA/JPL/USGS (Viking) via NASA Trek
 
-## 10. When the official resources drop (13:00 IST)
+## 10. Official resources: integrated on 13 November 2026
 
-1. Read every resource link and add any new artifacts or datasets to `site/js/data.js`. Each entry needs at least one source.
-2. Swap or add basemaps if the resources list specific mosaics, for example LROC NAC close-ups of the Apollo sites.
-3. Cite the official resources in section 7 and in the site's *Sources & method* footer.
-4. Check that our artifact list matches the "hardware" the resources emphasize, and add a dossier for anything missing.
+The challenge page lists fourteen NASA resources. What we did with them:
+
+1. **Read every page** and compared it with our dossiers.
+2. **Added the three machines we were missing:** Dawn (silent in orbit around Ceres), NEAR Shoemaker (resting on the asteroid Eros) and the Kepler space telescope (switched off, trailing Earth around the Sun). Each has a photo, a story, an imagined log, key moments and sources. Ceres, Eros and Kepler are in the simulator on real JPL orbits.
+3. **Updated facts from the official pages:** Surveyor 3's landing and last-contact dates and its 6,326 pictures; the Apollo 12 crash as the first recorded artificial moonquake; 27.9 km driven by the Apollo 15 rover; Viking 1's last day (now cited to NASA instead of Wikipedia); Opportunity's exact 45.16 km; and that Perseverance passed it on 11 October 2026.
+4. **Made the link visible to judges:** the About tab has a "Built on NASA's challenge resources" section that maps each resource to the machines that cite it, and those sources carry a "Challenge resource" badge inside the story panels.
+5. **One disagreement we kept:** NSSDCA says the Apollo 17 crew "covered 30 km"; we keep the rover's 35.7 km from The Planetary Society's driving-record table and do not cite NSSDCA for that number.
 
 ## 11. Stretch goals (if time allows)
 
